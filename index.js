@@ -48,7 +48,7 @@ pool.connect();
 app.route("/reviews")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN users ON reviews.author_id = users.user_id");
+      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id");
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);
@@ -58,7 +58,7 @@ app.route("/reviews")
 app.route("/reviews/:reviewId")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN users ON reviews.author_id = users.user_id WHERE review_id = $1", [req.params.reviewId]);
+      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE review_id = $1", [req.params.reviewId]);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);
@@ -97,7 +97,7 @@ app.route("/users/:userId")
 app.route("/users/:userId/reviews")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN users ON reviews.author_id = users.user_id WHERE user_id = $1", [req.params.userId]);
+      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE user_id = $1", [req.params.userId]);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);
@@ -107,7 +107,7 @@ app.route("/users/:userId/reviews")
 app.route("/users/:userId/reviews/:reviewId")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN users ON reviews.author_id = users.user_id WHERE user_id = $1 AND review_id = $2", [req.params.userId, req.params.reviewId]);
+      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE user_id = $1 AND review_id = $2", [req.params.userId, req.params.reviewId]);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);
@@ -142,7 +142,7 @@ app.route("/destinations/:destinationId")
 app.route("/destinations/:destinationId/reviews")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN users ON reviews.author_id = users.user_id WHERE destination_id = $1", [req.params.destinationId]);
+      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE destinations.destination_id = $1", [req.params.destinationId]);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);
@@ -152,7 +152,7 @@ app.route("/destinations/:destinationId/reviews")
 app.route("/destinations/:destinationId/reviews/:reviewId")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN users ON reviews.author_id = users.user_id WHERE destination_id = $1 AND review_id = $2", [req.params.destinationId, req.params.reviewId]);
+      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE destinations.destination_id = $1 AND review_id = $2", [req.params.destinationId, req.params.reviewId]);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);

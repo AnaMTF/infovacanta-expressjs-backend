@@ -122,7 +122,7 @@ app.route("/users/:userId/reviews/:reviewId/comments")
 app.route("/destinations")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM destinations");
+      const result = await pool.query("SELECT * FROM destinations JOIN images ON destinations.destination_picture_id = images.image_id");
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);
@@ -132,7 +132,7 @@ app.route("/destinations")
 app.route("/destinations/:destinationId")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM destinations WHERE destination_id = $1", [req.params.destinationId]);
+      const result = await pool.query("SELECT * FROM destinations JOIN images ON destinations.destination_picture_id = images.image_id WHERE destination_id = $1", [req.params.destinationId]);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);

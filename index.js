@@ -42,98 +42,119 @@ pool.connect();
  * Rutele aplicatiei 
  */
 
-app.get("/reviews", async function (req, res) {
-  try {
-    const result = await pool.query(command);
-    res.status(200).json(result.rows);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
+app.route("/reviews")
+  .get(async function (req, res) {
+    try {
+      const result = await pool.query(command);
+      res.status(200).json(result.rows);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  });
 
-app.get("/reviews/:reviewId", async function (req, res) {
-  try {
-    const result = await pool.query("SELECT * FROM reviews WHERE review_id = $1", [req.params.reviewId]);
-    res.status(200).json(result.rows);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
+app.route("/reviews/:reviewId")
+  .get(async function (req, res) {
+    try {
+      const result = await pool.query("SELECT * FROM reviews WHERE review_id = $1", [req.params.reviewId]);
+      res.status(200).json(result.rows);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  });
 
-app.get("/reviews/:reviewId/comments", function (req, res) {
-  res.status(404).send("Not implemented");
-});
+app.route("/reviews/:reviewId/comments")
+  .get(function (req, res) {
+    res.status(404).send("Not implemented");
+  });
 
-app.get("/users", async function (req, res) {
-  try {
-    const result = await pool.query("SELECT * FROM users");
-    res.status(200).json(result.rows);
-  } catch (error) {
-    res.status(500).json(err);
-  }
-});
+app.route("/users")
+  .get(async function (req, res) {
+    command = "SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users";
 
-app.get("/users/:userId", async function (req, res) {
-  try {
-    const result = await pool.query("SELECT * FROM users WHERE user_id = $1", [req.params.userId]);
-    res.status(200).json(result.rows);
-  } catch (error) {
-    res.status(500).json(err);
-  }
-});
+    try {
+      const result = await pool.query(command);
+      res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  });
 
-app.get("/users/:userId/reviews", async function (req, res) {
-  try {
-    const result = await pool.query("SELECT * FROM reviews WHERE user_id = $1", [req.params.userId]);
-    res.status(200).json(result.rows);
-  } catch (error) {
-    res.status(500).json(err);
-  }
-});
+app.route("/users/:userId")
+  .get(async function (req, res) {
+    const command = "SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users WHERE user_id = $1";
 
-app.get("/users/:userId/reviews/:reviewId", async function (req, res) {
-  try {
-    const result = await pool.query("SELECT * FROM reviews WHERE user_id = $1 AND review_id = $2", [req.params.userId, req.params.reviewId]);
-    res.status(200).json(result.rows);
-  } catch (error) {
-    res.status(500).json(err);
-  }
-});
+    try {
+      const result = await pool.query(command, [req.params.userId]);
+      res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(err);
+    }
+  });
 
-app.get("/users/:userId/reviews/:reviewId/comments", function (req, res) {
-  res.status(404).send("Not implemented");
-});
+app.route("/users/:userId/reviews")
+  .get(async function (req, res) {
+    try {
+      const result = await pool.query("SELECT * FROM reviews WHERE user_id = $1", [req.params.userId]);
+      res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(err);
+    }
+  });
 
-app.get("/destinations", async function (req, res) {
-  try {
-    const result = await pool.query("SELECT * FROM destinations");
-    res.status(200).json(result.rows);
-  } catch (error) {
-    res.status(500).json(err);
-  }
-});
+app.route("/users/:userId/reviews/:reviewId")
+  .get(async function (req, res) {
+    try {
+      const result = await pool.query("SELECT * FROM reviews WHERE user_id = $1 AND review_id = $2", [req.params.userId, req.params.reviewId]);
+      res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(err);
+    }
+  });
 
-app.get("/destinations/:destinationId", async function (req, res) {
-  try {
-    const result = await pool.query("SELECT * FROM destinations WHERE destination_id = $1", [req.params.destinationId]);
-    res.status(200).json(result.rows);
-  } catch (error) {
-    res.status(500).json(err);
-  }
-});
+app.route("/users/:userId/reviews/:reviewId/comments")
+  .get(function (req, res) {
+    res.status(404).send("Not implemented");
+  });
 
-app.get("/destinations/:destinationId/reviews", async function (req, res) {
-  try {
-    const result = await pool.query("SELECT * FROM reviews WHERE destination_id = $1", [req.params.destinationId]);
-    res.status(200).json(result.rows);
-  } catch (error) {
-    res.status(500).json(err);
-  }
-});
+app.route("/destinations")
+  .get(async function (req, res) {
+    try {
+      const result = await pool.query("SELECT * FROM destinations");
+      res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(err);
+    }
+  });
 
-app.get("/destinations/:destinationId/reviews/comments", async function (req, res) {
-  res.status(404).send("Not implemented");
-});
+app.route("/destinations/:destinationId")
+  .get(async function (req, res) {
+    try {
+      const result = await pool.query("SELECT * FROM destinations WHERE destination_id = $1", [req.params.destinationId]);
+      res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(err);
+    }
+  });
+
+app.route("/destinations/:destinationId/reviews")
+  .get(async function (req, res) {
+    try {
+      const result = await pool.query("SELECT * FROM reviews WHERE destination_id = $1", [req.params.destinationId]);
+      res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(err);
+    }
+  });
+
+app.route("/destinations/:destinationId/reviews/:reviewId")
+  .get(async function (req, res) {
+    try {
+      const result = await pool.query("SELECT * FROM reviews WHERE destination_id = $1 AND review_id = $2", [req.params.destinationId, req.params.reviewId]);
+      res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(err);
+    }
+  });
 
 /*
  * Pornirea aplicatiei

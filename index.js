@@ -13,6 +13,7 @@ const morgan = require("morgan");
 
 const path = require("path");
 const postgres = require("pg");
+const cors = require("cors");
 
 /*
  * Declaratii
@@ -34,8 +35,10 @@ const pool = new postgres.Pool({
  * Middleware & Setup
  */
 
-app.use(express.static(path.join(__dirname, "pub                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       lic")));
+app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public/images")));
 app.use(morgan("dev"));
+app.use(cors());
 pool.connect();
 
 /*
@@ -45,20 +48,20 @@ pool.connect();
 app.route("/reviews")
   .get(async function (req, res) {
     try {
-      const result = await pool.query(command);
+      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN users ON reviews.author_id = users.user_id");
       res.status(200).json(result.rows);
-    } catch (err) {
-      res.status(500).json(err);
+    } catch (error) {
+      res.status(500).json(error);
     }
   });
 
 app.route("/reviews/:reviewId")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM reviews WHERE review_id = $1", [req.params.reviewId]);
+      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN users ON reviews.author_id = users.user_id WHERE review_id = $1", [req.params.reviewId]);
       res.status(200).json(result.rows);
-    } catch (err) {
-      res.status(500).json(err);
+    } catch (error) {
+      res.status(500).json(error);
     }
   });
 
@@ -87,27 +90,27 @@ app.route("/users/:userId")
       const result = await pool.query(command, [req.params.userId]);
       res.status(200).json(result.rows);
     } catch (error) {
-      res.status(500).json(err);
+      res.status(500).json(error);
     }
   });
 
 app.route("/users/:userId/reviews")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM reviews WHERE user_id = $1", [req.params.userId]);
+      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN users ON reviews.author_id = users.user_id WHERE user_id = $1", [req.params.userId]);
       res.status(200).json(result.rows);
     } catch (error) {
-      res.status(500).json(err);
+      res.status(500).json(error);
     }
   });
 
 app.route("/users/:userId/reviews/:reviewId")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM reviews WHERE user_id = $1 AND review_id = $2", [req.params.userId, req.params.reviewId]);
+      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN users ON reviews.author_id = users.user_id WHERE user_id = $1 AND review_id = $2", [req.params.userId, req.params.reviewId]);
       res.status(200).json(result.rows);
     } catch (error) {
-      res.status(500).json(err);
+      res.status(500).json(error);
     }
   });
 
@@ -122,7 +125,7 @@ app.route("/destinations")
       const result = await pool.query("SELECT * FROM destinations");
       res.status(200).json(result.rows);
     } catch (error) {
-      res.status(500).json(err);
+      res.status(500).json(error);
     }
   });
 
@@ -132,27 +135,27 @@ app.route("/destinations/:destinationId")
       const result = await pool.query("SELECT * FROM destinations WHERE destination_id = $1", [req.params.destinationId]);
       res.status(200).json(result.rows);
     } catch (error) {
-      res.status(500).json(err);
+      res.status(500).json(error);
     }
   });
 
 app.route("/destinations/:destinationId/reviews")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM reviews WHERE destination_id = $1", [req.params.destinationId]);
+      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN users ON reviews.author_id = users.user_id WHERE destination_id = $1", [req.params.destinationId]);
       res.status(200).json(result.rows);
     } catch (error) {
-      res.status(500).json(err);
+      res.status(500).json(error);
     }
   });
 
 app.route("/destinations/:destinationId/reviews/:reviewId")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM reviews WHERE destination_id = $1 AND review_id = $2", [req.params.destinationId, req.params.reviewId]);
+      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN users ON reviews.author_id = users.user_id WHERE destination_id = $1 AND review_id = $2", [req.params.destinationId, req.params.reviewId]);
       res.status(200).json(result.rows);
     } catch (error) {
-      res.status(500).json(err);
+      res.status(500).json(error);
     }
   });
 

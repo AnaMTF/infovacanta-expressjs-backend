@@ -9,4 +9,6 @@ const pool = new postgres.Pool({
     max: 250
 });
 
+pool.connect();
+
 module.exports = pool;

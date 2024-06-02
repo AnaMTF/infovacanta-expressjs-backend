@@ -1,51 +1,16 @@
-/* Anamaria-Florentina Titeche 2024
- * Serverul aplicatiei InfoVacanta.
- * Se ocupa de partea de backend a aplicatiei.
- * Sarcinile lui sunt de a autentifica utilizatorii si de a transmite date aplicatiei. 
- */
-
-/*
- * Importuri
- */
-
 const express = require("express");
-const morgan = require("morgan");
-
 const path = require("path");
-const postgres = require("pg");
-const cors = require("cors");
+const pool = require("../database/postgres.database");
+
+var router = express.Router();
+
+router.use(express.static(path.join(__dirname, "public")));
+router.use(express.static(path.join(__dirname, "public/images")));
 
 /*
- * Declaratii
+ * Rute
  */
-
-const app = express();
-const port = 5000;
-
-const pool = new postgres.Pool({
-  user: "postgres",
-  host: "localhost",
-  database: "infovacanta2",
-  password: "3001",
-  port: 5432,
-  max: 250
-});
-
-/*
- * Middleware & Setup
- */
-
-app.use(express.static(path.join(__dirname, "public")));
-app.use(express.static(path.join(__dirname, "public/images")));
-app.use(morgan("dev"));
-app.use(cors());
-pool.connect();
-
-/*
- * Rutele aplicatiei 
- */
-
-app.route("/reviews")
+router.route("/reviews")
   .get(async function (req, res) {
     try {
       const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id");
@@ -55,7 +20,7 @@ app.route("/reviews")
     }
   });
 
-app.route("/reviews/:reviewId")
+router.route("/reviews/:reviewId")
   .get(async function (req, res) {
     try {
       const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE review_id = $1", [req.params.reviewId]);
@@ -65,12 +30,12 @@ app.route("/reviews/:reviewId")
     }
   });
 
-app.route("/reviews/:reviewId/comments")
+router.route("/reviews/:reviewId/comments")
   .get(function (req, res) {
     res.status(404).send("Not implemented");
   });
 
-app.route("/users")
+router.route("/users")
   .get(async function (req, res) {
     command = "SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users";
 
@@ -82,7 +47,7 @@ app.route("/users")
     }
   });
 
-app.route("/users/:userId")
+router.route("/users/:userId")
   .get(async function (req, res) {
     const command = "SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users WHERE user_id = $1";
 
@@ -94,7 +59,7 @@ app.route("/users/:userId")
     }
   });
 
-app.route("/users/:userId/reviews")
+router.route("/users/:userId/reviews")
   .get(async function (req, res) {
     try {
       const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE user_id = $1", [req.params.userId]);
@@ -104,7 +69,7 @@ app.route("/users/:userId/reviews")
     }
   });
 
-app.route("/users/:userId/reviews/:reviewId")
+router.route("/users/:userId/reviews/:reviewId")
   .get(async function (req, res) {
     try {
       const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE user_id = $1 AND review_id = $2", [req.params.userId, req.params.reviewId]);
@@ -114,12 +79,12 @@ app.route("/users/:userId/reviews/:reviewId")
     }
   });
 
-app.route("/users/:userId/reviews/:reviewId/comments")
+router.route("/users/:userId/reviews/:reviewId/comments")
   .get(function (req, res) {
     res.status(404).send("Not implemented");
   });
 
-app.route("/destinations")
+router.route("/destinations")
   .get(async function (req, res) {
     try {
       const result = await pool.query("SELECT * FROM destinations JOIN images ON destinations.destination_picture_id = images.image_id");
@@ -129,7 +94,7 @@ app.route("/destinations")
     }
   });
 
-app.route("/destinations/:destinationId")
+router.route("/destinations/:destinationId")
   .get(async function (req, res) {
     try {
       const result = await pool.query("SELECT * FROM destinations JOIN images ON destinations.destination_picture_id = images.image_id WHERE destination_id = $1", [req.params.destinationId]);
@@ -139,7 +104,7 @@ app.route("/destinations/:destinationId")
     }
   });
 
-app.route("/destinations/:destinationId/reviews")
+router.route("/destinations/:destinationId/reviews")
   .get(async function (req, res) {
     try {
       const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE destinations.destination_id = $1", [req.params.destinationId]);
@@ -149,7 +114,7 @@ app.route("/destinations/:destinationId/reviews")
     }
   });
 
-app.route("/destinations/:destinationId/reviews/:reviewId")
+router.route("/destinations/:destinationId/reviews/:reviewId")
   .get(async function (req, res) {
     try {
       const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE destinations.destination_id = $1 AND review_id = $2", [req.params.destinationId, req.params.reviewId]);
@@ -159,10 +124,4 @@ app.route("/destinations/:destinationId/reviews/:reviewId")
     }
   });
 
-/*
- * Pornirea aplicatiei
- */
-
-app.listen(port, function () {
-  console.log(`Server is running on port ${port}`);
-});
+module.exports = router;

@@ -10,8 +10,8 @@
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
-const session = require("express-session");
 
+const bodyParser = require("body-parser");
 const authRouter = require("./routes/auth");
 const indexRouter = require("./routes/index");
 
@@ -27,19 +27,9 @@ const port = 5000;
  */
 app.use(morgan("dev"));
 app.use(cors());
-
 app.use("/", indexRouter);
 app.use("/auth", authRouter);
-
-app.use(session({
-  secret: "VERY_SECRET_KEY",
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    secure: false, //<-- Setarea true necesita HTTPS
-    maxAge: 1000 * 60 * 60 * 24 * 30, //<-- 30 de zile
-  },
-}));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 /*
  * Pornirea aplicatiei

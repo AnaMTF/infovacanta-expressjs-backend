@@ -1,5 +1,6 @@
 const express = require("express");
 const session = require("express-session");
+const fileUpload = require('express-fileupload');
 
 const bodyParser = require("body-parser");
 const passport = require("passport");
@@ -7,12 +8,12 @@ const LocalStrategy = require("passport-local");
 const bcrypt = require("bcrypt");
 const pool = require("../database/postgres.database");
 
-const router = express.Router();
-const saltRounds = 10;
-
 /*
 * Middleware & Setup
 */
+const router = express.Router();
+const saltRounds = 10;
+
 passport.initialize();
 router.use(session({
   secret: "VERY_SECRET_KEY",
@@ -25,11 +26,12 @@ router.use(session({
 }));
 router.use(passport.authenticate("session"));
 router.use(bodyParser.urlencoded({ extended: true }));
+router.use(fileUpload());
 /*
  * Implementarea strategiilor
  */
 const passwordStrategy = new LocalStrategy(async function verify(username, password, cb) {
-  console.log("Informatii Debug functie `passwordStrategy`")
+  console.log("Informatii Debug functie `passwordStrategy`");
   console.log("username: ", username);
   console.log("password: ", password);
   try {
@@ -127,9 +129,26 @@ router.route("/register/password")
     const nickname = req.body.nickname;
     const full_name = req.body.full_name;
     const password = req.body.password;
-
+    //res.json({ body: req.body, files: req.files || "No files" });
+    //res.json({dirname: __dirname});
     if (!email || !nickname || !full_name || !password) {
       return res.status(400).json({ message: "Completati toate campurile" });
+    }
+
+    let profile_picture_id = null;
+    let profile_picture = null;
+    let profile_picture_path = null;
+    if (req.files) {
+      profile_picture = req.files.profile_picture;
+      profile_picture_path = __dirname + "\\..\\public\\images\\profile_pictures\\" + profile_picture.name;
+      profile_picture_path_relative = "http://localhost:5000/images/profile_pictures/" + profile_picture.name;
+      try {
+        profile_picture.mv(profile_picture_path);
+        const result = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["profile", profile_picture_path_relative]);
+        profile_picture_id = result.rows[0].image_id;
+      } catch (error) {
+        console.log(error.message);
+      }
     }
 
     try {
@@ -145,7 +164,16 @@ router.route("/register/password")
         }
 
         try {
-          await pool.query("INSERT INTO users (email, nickname, full_name, user_password) VALUES ($1, $2, $3, $4)", [email, nickname, full_name, hash]);
+          const result = await pool.query("INSERT INTO users (email, nickname, full_name, user_password) VALUES ($1, $2, $3, $4) RETURNING user_id", [email, nickname, full_name, hash]);
+          const user_id = result.rows[0].user_id;
+          
+          // console.log("profile_picture_path: ", profile_picture_path);
+          // console.log("user_id: ", user_id);
+
+          if (profile_picture_path) {
+            await pool.query("UPDATE users SET profile_picture_id = $1 WHERE user_id = $2", [profile_picture_id, user_id]);
+          }
+
           return res.status(201).json({ message: "Utilizatorul a fost creat" });
         } catch (error) {
           return res.status(500).json({ message: error.message });

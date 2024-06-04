@@ -1,13 +1,9 @@
 const express = require("express");
-const path = require("path");
+// const path = require("path");
 const pool = require("../database/postgres.database");
 const bodyParser = require("body-parser");
-
 const router = express.Router();
 
-router.use(express.static(path.join(__dirname, "public")));
-router.use(express.static(path.join(__dirname, "public/images")));
-//router.use(express.static(path.join(__dirname, "public/images/profile_pictures")));
 router.use(bodyParser.urlencoded({ extended: true }));
 
 /*

@@ -141,7 +141,7 @@ router.route("/register/password")
     if (req.files) {
       profile_picture = req.files.profile_picture;
       profile_picture_path = __dirname + "\\..\\public\\images\\profile_pictures\\" + profile_picture.name;
-      profile_picture_path_relative = "http://localhost:5000/images/profile_pictures/" + profile_picture.name;
+      profile_picture_path_relative = "http://localhost:5000/" + profile_picture.name;
       try {
         profile_picture.mv(profile_picture_path);
         const result = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["profile", profile_picture_path_relative]);
@@ -153,7 +153,7 @@ router.route("/register/password")
 
     try {
       const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-      
+
       if (result.rows.length > 0) {
         return res.status(400).json({ message: "Email-ul exista deja" });
       }
@@ -166,7 +166,7 @@ router.route("/register/password")
         try {
           const result = await pool.query("INSERT INTO users (email, nickname, full_name, user_password) VALUES ($1, $2, $3, $4) RETURNING user_id", [email, nickname, full_name, hash]);
           const user_id = result.rows[0].user_id;
-          
+
           // console.log("profile_picture_path: ", profile_picture_path);
           // console.log("user_id: ", user_id);
 
@@ -186,9 +186,9 @@ router.route("/register/password")
   });
 
 router.route("/logout")
-//   .get(function (req, res) {
-//     res.json({ mesaj: "Aceasta este pagina de logout" });
-//   })
+  //   .get(function (req, res) {
+  //     res.json({ mesaj: "Aceasta este pagina de logout" });
+  //   })
   .get(function (req, res, next) { // <-- NU ESTE BEST PRACTICE !!!
     req.logout(function (err) {
       if (err) return next(err);

@@ -4,7 +4,9 @@ const pool = require("../database/postgres.database");
 const bodyParser = require("body-parser");
 const router = express.Router();
 
-router.use(bodyParser.urlencoded({ extended: true }));
+// router.use(cors({ origin: "http://localhost:3000" }));
+// router.use(bodyParser.json());
+// router.use(bodyParser.urlencoded({ extended: true }));
 
 /*
  * Rute
@@ -85,6 +87,8 @@ router.route("/users/:userId/reviews/:reviewId/comments")
 
 router.route("/destinations")
   .get(async function (req, res) {
+    // console.log(req.passport.session || "No session");
+
     try {
       const result = await pool.query("SELECT * FROM destinations JOIN images ON destinations.destination_picture_id = images.image_id");
       res.status(200).json(result.rows);

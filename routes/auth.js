@@ -25,15 +25,17 @@ router.use(session({
   },
 }));
 router.use(passport.authenticate("session"));
+// router.use(cors({ origin: "http://localhost:3000" }));
+router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(fileUpload());
 /*
  * Implementarea strategiilor
  */
 const passwordStrategy = new LocalStrategy(async function verify(username, password, cb) {
-  console.log("Informatii Debug functie `passwordStrategy`");
-  console.log("username: ", username);
-  console.log("password: ", password);
+  // console.log("Informatii Debug functie `passwordStrategy`");
+  // console.log("username: ", username);
+  // console.log("password: ", password);
   try {
     const result = await pool.query("SELECT * FROM users WHERE email = $1", [username]);
     if (result.rows.length === 0) {
@@ -73,6 +75,14 @@ passport.use("local", passwordStrategy);
 /*
  * Rute
  */
+router.route("/status").get(function (req, res) {
+  if (req.isAuthenticated()) {
+    res.send(req.user);
+  } else {
+    res.status(401).json({ message: "Utilizatorul nu este autentificat" });
+  }
+});
+
 router.route("/login").get(function (req, res) {
   res.json({
     message: "Aceasta este pagina de login",
@@ -96,6 +106,9 @@ router.route("/login/password")
     successRedirect: "http://localhost:3000/main",
     failureRedirect: "http://localhost:3000/login",
   }));
+// .post(passport.authenticate("local"), function (req, res) {
+//   res.send(req.user);
+// });
 
 router.route("/login/password/success").get(function (req, res) {
   res.json({

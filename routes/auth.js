@@ -14,20 +14,21 @@ const pool = require("../database/postgres.database");
 const router = express.Router();
 const saltRounds = 10;
 
-passport.initialize();
+router.use(bodyParser.json());
+router.use(bodyParser.urlencoded({ extended: true }));
 router.use(session({
   secret: "VERY_SECRET_KEY",
   resave: false,
   saveUninitialized: true,
-  cookie: {
-    secure: false, //<-- Setarea true necesita HTTPS
-    maxAge: 1000 * 60 * 60 * 24 * 30, //<-- 30 de zile
-  },
+  // cookie: {
+  //   secure: false, //<-- Setarea true necesita HTTPS
+  //   maxAge: 1000 * 60 * 60 * 24 * 30, //<-- 30 de zile
+  // },
 }));
-router.use(passport.authenticate("session"));
+router.use(passport.initialize());
+router.use(passport.session());
+// router.use(passport.authenticate("session"));
 // router.use(cors({ origin: "http://localhost:3000" }));
-router.use(bodyParser.json());
-router.use(bodyParser.urlencoded({ extended: true }));
 router.use(fileUpload());
 /*
  * Implementarea strategiilor
@@ -100,12 +101,18 @@ router.route("/login/password")
   //   res.json({ mesaj: "Receptionat!" , request: req.body});
   //   next();
   // })
-  .post(passport.authenticate("local", {
-    // successRedirect: "password/success", // <-- de schimbat
-    // failureRedirect: "password/error",   // <-- de schimbat
-    successRedirect: "http://localhost:3000/main",
-    failureRedirect: "http://localhost:3000/login",
-  }));
+  .post(passport.authenticate("local",
+    // {
+    //   // successRedirect: "password/success", // <-- de schimbat
+    //   // failureRedirect: "password/error",   // <-- de schimbat
+    //   successRedirect: "http://localhost:3000/main",
+    //   failureRedirect: "http://localhost:3000/login",
+    // }
+  ), function (req, res) {
+    console.log("Un utilizator a fost logat cu succes!");
+    console.log(req.user);
+    res.send(req.user);
+  });
 // .post(passport.authenticate("local"), function (req, res) {
 //   res.send(req.user);
 // });
@@ -210,14 +217,49 @@ router.route("/logout")
     });
   });
 
+router.route("/myprofile")
+  .get(function (req, res) {
+    if (req.isAuthenticated()) {
+      console.log("Un utilizator a accesat pagina de profil");
+      console.log(req.session.passport.user);
+      res.json(req.session.passport.user);
+      // res.status(200).json({
+      //   message: "You are authenticated",
+      // })
+    } else {
+      console.log("Un utilizator a incercat sa acceseze pagina de profil fara a fi autentificat");
+      res.status(401).json({
+        message: "You are not authenticated",
+      })
+    }
+  });
+
+router.route("/profile/:user_id");
+
 /*
  * Serializare si deserializare utilizator
  */
+// passport.serializeUser((user, cb) => {
+//   cb(null, user);
+// });
+// passport.deserializeUser((user, cb) => {
+//   cb(null, user);
+// });
+
 passport.serializeUser((user, cb) => {
-  cb(null, user);
+  cb(null, user.user_id); // Store user_id in the session
 });
-passport.deserializeUser((user, cb) => {
-  cb(null, user);
+
+passport.deserializeUser(async (id, cb) => {
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE user_id = $1', [id]);
+    if (result.rows.length === 0) {
+      return cb(new Error('User not found'));
+    }
+    cb(null, result.rows[0]); // Fetch full user details
+  } catch (err) {
+    cb(err);
+  }
 });
 
 module.exports = router;

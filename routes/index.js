@@ -29,6 +29,14 @@ router.route("/reviews/:reviewId")
     } catch (error) {
       res.status(500).json(error);
     }
+  })
+  .delete(async function (req, res) {
+    try {
+      await pool.query("DELETE FROM reviews WHERE review_id = $1", [req.params.reviewId]);
+      res
+    } catch (error) {
+      res.status(500).json(error);
+    }
   });
 
 router.route("/reviews/:reviewId/comments")

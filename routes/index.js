@@ -30,9 +30,20 @@ router.route("/reviews/:reviewId")
       res.status(500).json(error);
     }
   })
+  .put(async function (req, res) {
+    console.log(req.body);
+    const command = "UPDATE reviews SET review_body = $1, rating = $2, review_picture_id = $3 WHERE review_id = $4";
+
+    try {
+      await pool.query(command, [req.body.review_body, req.body.rating, req.body.review_picture_id, req.params.review_id]);
+      res.status(200).json({ message: "Review-ul a fost actualizat" });
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  })
   .delete(async function (req, res) {
     try {
-      await pool.query("DELETE FROM reviews WHERE review_id = $1", [req.params.reviewId]);
+      await pool.query("DELETE FROM reviews WHERE review_id = $1", [req.params.review_id]);
       res
     } catch (error) {
       res.status(500).json(error);
@@ -42,6 +53,15 @@ router.route("/reviews/:reviewId")
 router.route("/reviews/:reviewId/comments")
   .get(function (req, res) {
     res.status(404).send("Not implemented");
+  })
+  .post(async function (req, res) {
+    console.log(req.body);
+    try {
+      await pool.query("INSERT INTO comments (content, author_id, review_id) VALUES ($1, $2, $3)", [req.body.content, req.body.author_id, req.params.reviewId]);
+      res.status(201).json({ message: "Comentariul a fost adăugat" });
+    } catch (error) {
+      res.status(500).json(error);
+    }
   });
 
 router.route("/users")

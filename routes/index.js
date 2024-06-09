@@ -51,8 +51,13 @@ router.route("/reviews/:reviewId")
   });
 
 router.route("/reviews/:reviewId/comments")
-  .get(function (req, res) {
-    res.status(404).send("Not implemented");
+  .get(async function (req, res) {
+    try {
+      const result = await pool.query("SELECT * FROM comments WHERE review_id = $1", [req.params.reviewId]);
+      res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(error);
+    }
   })
   .post(async function (req, res) {
     console.log(req.body);
@@ -109,8 +114,13 @@ router.route("/users/:userId/reviews/:reviewId")
   });
 
 router.route("/users/:userId/reviews/:reviewId/comments")
-  .get(function (req, res) {
-    res.status(404).send("Not implemented");
+  .get(async function (req, res) {
+    try {
+      const result = await pool.query("SELECT * FROM comments WHERE review_id = $1 AND author_id = $2", [req.params.reviewId, req.params.userId]);
+      res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(error);
+    }
   });
 
 router.route("/destinations")
@@ -150,6 +160,43 @@ router.route("/destinations/:destinationId/reviews/:reviewId")
     try {
       const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE destinations.destination_id = $1 AND review_id = $2", [req.params.destinationId, req.params.reviewId]);
       res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  });
+
+router.route("/query")
+  .get(async function (req, res) {
+    const command = "SELECT * FROM reviews WHERE LOWER(review_body) LIKE '%' || LOWER($1) || '%'";
+    try {
+      const result = await pool.query(command, [req.body.keyword]);
+      res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  });
+
+router.route("/query/:keyword")
+  .get(async function (req, res) {
+    const command_reviews = "SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE LOWER(review_body) LIKE '%' || LOWER($1) || '%'";
+    const command_destinations = "SELECT * FROM destinations WHERE LOWER(destination_name) LIKE '%' || LOWER($1) || '%' OR LOWER(description) LIKE '%' || LOWER($1) || '%' OR destination_category::TEXT LIKE '%' || LOWER($1) || '%'";
+    const command_users = "SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users WHERE LOWER(full_name) LIKE '%' || LOWER($1) || '%' OR LOWER(nickname) LIKE '%' || LOWER($1) || '%'";
+    const command_comments = "SELECT * FROM comments WHERE LOWER(content) LIKE '%' || LOWER($1) || '%'";
+
+    try {
+      const result_reviews = await pool.query(command_reviews, [req.params.keyword]);
+      const result_destinations = await pool.query(command_destinations, [req.params.keyword]);
+      const result_users = await pool.query(command_users, [req.params.keyword]);
+      const result_comments = await pool.query(command_comments, [req.params.keyword]);
+
+      const result = {
+        reviews: result_reviews.rows,
+        destinations: result_destinations.rows,
+        users: result_users.rows,
+        comments: result_comments.rows
+      };
+
+      res.status(200).json(result);
     } catch (error) {
       res.status(500).json(error);
     }

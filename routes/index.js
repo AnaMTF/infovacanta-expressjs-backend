@@ -189,7 +189,6 @@ router.route("/query")
     } catch (error) {
       res.status(500).json(error);
     }
-  }
   });
 
 router.route("/query/:keyword")

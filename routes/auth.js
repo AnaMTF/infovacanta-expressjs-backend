@@ -69,7 +69,36 @@ const passwordStrategy = new LocalStrategy(async function verify(username, passw
   }
 });
 
-const googleStragegy = new GoogleStrategy();
+const googleStragegy = new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: "localhost:3000/main", // <-- DE COMPLETAT
+  userProfileURL: "localhost:3000/profil"
+}, async function (accessToken, refreshToken, profile, cb) {
+  console.log("Informatii Debug functie `googleStrategy`");
+  console.log("utilizatorul autentificat: ", profile);
+
+  const command = "user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users WHERE email = $1";
+
+  try {
+    var result = await pool.query(command, [profile.email]);
+
+    if (result.rows.length > 0) {
+      // Utilizatorul exista
+      return cb(null, result.rows[0]);
+    }
+
+    // Utilizatorul nu exista
+    // TO DO: POZA DE PROFIL
+    const insert_command_profile_picture = "INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id";
+    const insert_command_user = "INSERT INTO users (email, nickname, full_name, user_password) VALUES ($1, $2, $3, $4) RETURNING user_id";
+
+    var result = await pool.query(insert_command_user, [profile.email, profile.displayName.toLowerCase().replaceAll(" ", "-"), profile.displayName, null]);
+    return cb(null, result.rows[0]);
+  } catch (error) {
+    return cb(error);
+  }
+});
 
 /*
  * Configurarea strategiilor

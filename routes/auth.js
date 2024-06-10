@@ -161,6 +161,13 @@ router.route("/login/password/error").get(function (req, res) {
   });
 });
 
+router.route("/login/google")
+  .post(passport.authenticate("google"), function (req, res) {
+    console.log("Un utilizator a fost logat cu succes folosind Google!");
+    console.log(req.user);
+    res.send(req.user);
+  });
+
 router.route("/register").get(function (req, res) {
   res.json({
     message: "Aceasta este pagina de inregistrare",

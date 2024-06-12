@@ -27,6 +27,9 @@ router.route("/reviews")
     } catch (error) {
       res.status(500).json(error);
     }
+  })
+  .post(async function (req, res) {
+    res.status(201).json({ message: "Recenzia a fost adăugată" });
   });
 
 router.route("/reviews/:reviewId")

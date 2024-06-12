@@ -8,13 +8,21 @@ const router = express.Router();
 // router.use(bodyParser.json());
 // router.use(bodyParser.urlencoded({ extended: true }));
 
+const getReviewsCommand = "SELECT * FROM reviews \
+    JOIN destinations \
+    ON reviews.destination_id = destinations.destination_id \
+    JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query \
+    ON reviews.author_id = user_query.user_id \
+    JOIN (select review_id, count(comment_id) as number_of_comments from comments group by review_id) as comm_query \
+    ON reviews.review_id = comm_query.review_id";
+
 /*
  * Rute
  */
 router.route("/reviews")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id");
+      const result = await pool.query(getReviewsCommand);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);
@@ -24,7 +32,7 @@ router.route("/reviews")
 router.route("/reviews/:reviewId")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE review_id = $1", [req.params.reviewId]);
+      const result = await pool.query(getReviewsCommand + " WHERE reviews.review_id = $1", [req.params.reviewId]);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);
@@ -53,7 +61,7 @@ router.route("/reviews/:reviewId")
 router.route("/reviews/:reviewId/comments")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM comments WHERE review_id = $1", [req.params.reviewId]);
+      const result = await pool.query("SELECT * FROM comments JOIN (SELECT user_id, nickname FROM users) as users_info ON comments.author_id = users_info.user_id WHERE review_id = $1", [req.params.reviewId]);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);
@@ -96,7 +104,7 @@ router.route("/users/:userId")
 router.route("/users/:userId/reviews")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE user_id = $1", [req.params.userId]);
+      const result = await pool.query(getReviewsCommand + " WHERE user_id = $1", [req.params.userId]);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);
@@ -106,7 +114,7 @@ router.route("/users/:userId/reviews")
 router.route("/users/:userId/reviews/:reviewId")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE user_id = $1 AND review_id = $2", [req.params.userId, req.params.reviewId]);
+      const result = await pool.query(getReviewsCommand + " WHERE user_id = $1 AND reviews.review_id = $2", [req.params.userId, req.params.reviewId]);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);
@@ -116,7 +124,7 @@ router.route("/users/:userId/reviews/:reviewId")
 router.route("/users/:userId/reviews/:reviewId/comments")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM comments WHERE review_id = $1 AND author_id = $2", [req.params.reviewId, req.params.userId]);
+      const result = await pool.query("SELECT * FROM comments JOIN (SELECT user_id, nickname FROM users) as users_info ON comments.author_id = users_info.user_id WHERE review_id = $1 AND author_id = $2", [req.params.reviewId, req.params.userId]);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);
@@ -148,7 +156,7 @@ router.route("/destinations/:destinationId")
 router.route("/destinations/:destinationId/reviews")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE destinations.destination_id = $1", [req.params.destinationId]);
+      const result = await pool.query(getReviewsCommand + " WHERE destinations.destination_id = $1", [req.params.destinationId]);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);
@@ -158,7 +166,7 @@ router.route("/destinations/:destinationId/reviews")
 router.route("/destinations/:destinationId/reviews/:reviewId")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE destinations.destination_id = $1 AND review_id = $2", [req.params.destinationId, req.params.reviewId]);
+      const result = await pool.query(getReviewsCommand + " WHERE destinations.destination_id = $1 AND reviews.review_id = $2", [req.params.destinationId, req.params.reviewId]);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);

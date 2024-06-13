@@ -1,0 +1,11 @@
+INSERT INTO images (image_category, location) VALUES ('profile', 'http://localhost:5000/2188-cartoon-4.jpg');
+INSERT INTO images (image_category, location) VALUES ('profile', 'http://localhost:5000/6d1ebf50b4a2c395dabbd4f8c1670c4b.jpg');
+INSERT INTO images (image_category, location) VALUES ('profile', 'http://localhost:5000/caio-fernandes-1288b8b9-187d-4812-a73f-1dd14c9bb8d3.jpg');
+INSERT INTO images (image_category, location) VALUES ('profile', 'http://localhost:5000/cartoon-profile-pictures-znyqac8g02ndd3v0.jpg');
+INSERT INTO images (image_category, location) VALUES ('profile', 'http://localhost:5000/cute-anime-profile-pictures-0lifptfs0jd9fml3.jpg');
+INSERT INTO images (image_category, location) VALUES ('profile', 'http://localhost:5000/cute-anime-profile-pictures-k6h3uqxn6ei77kgl.jpg');
+INSERT INTO images (image_category, location) VALUES ('profile', 'http://localhost:5000/d250af34bd488266b18cebb5e6729d98.jpg');
+INSERT INTO images (image_category, location) VALUES ('profile', 'http://localhost:5000/da51c26fe3398b0f8314fee17a98e0e7.jpg');
+INSERT INTO images (image_category, location) VALUES ('profile', 'http://localhost:5000/dg3ae9d-21224240-18f8-4057-907e-afbb7ef57e53.png');
+INSERT INTO images (image_category, location) VALUES ('profile', 'http://localhost:5000/maddie_creates-jj-ver2.jpg');
+INSERT INTO images (image_category, location) VALUES ('profile', 'http://localhost:5000/wp5861231.jpg');

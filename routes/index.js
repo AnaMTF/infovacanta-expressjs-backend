@@ -16,6 +16,32 @@ const getReviewsCommand = "SELECT * FROM reviews \
     JOIN (select review_id, count(comment_id) as number_of_comments from comments group by review_id) as comm_query \
     ON reviews.review_id = comm_query.review_id";
 
+const getDestinationsCommand = "WITH processed_destinations AS ( \
+    SELECT \
+        destination_id, \
+        destination_name, \
+        destination_category, \
+        coordinates, \
+        destination_picture_id, \
+        description, \
+        replace(lower(unaccent(destination_name)), ' ', '-') as destination_link \
+    FROM \
+        destinations \
+) \
+SELECT \
+    pd.destination_id, \
+    pd.destination_name, \
+    pd.destination_category, \
+    pd.coordinates, \
+    pd.destination_picture_id, \
+    pd.description, \
+    pd.destination_link, \
+    i.* \
+FROM \
+    processed_destinations pd \
+JOIN \
+    images i ON pd.destination_picture_id = i.image_id";
+
 /*
  * Rute
  */
@@ -139,7 +165,7 @@ router.route("/destinations")
     // console.log(req.passport.session || "No session");
 
     try {
-      const result = await pool.query("SELECT * FROM destinations JOIN images ON destinations.destination_picture_id = images.image_id");
+      const result = await pool.query(getDestinationsCommand);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);
@@ -149,7 +175,8 @@ router.route("/destinations")
 router.route("/destinations/:destinationId")
   .get(async function (req, res) {
     try {
-      const result = await pool.query("SELECT * FROM destinations JOIN images ON destinations.destination_picture_id = images.image_id WHERE destination_id = $1", [req.params.destinationId]);
+      //const result = await pool.query("SELECT * FROM destinations JOIN images ON destinations.destination_picture_id = images.image_id WHERE destination_id = $1", [req.params.destinationId]);
+      const result = await pool.query(getDestinationsCommand + " WHERE pd.destination_id = $1", [req.params.destinationId]);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);

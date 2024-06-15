@@ -42,6 +42,12 @@ FROM \
 JOIN \
     images i ON pd.destination_picture_id = i.image_id";
 
+
+const getUsersCommand = "WITH q_users AS ( \
+	SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users \
+) SELECT qu.*, i.location as pfp_location FROM q_users qu \
+JOIN images i \
+ON i.image_id = qu.profile_picture_id";
 /*
  * Rute
  */
@@ -108,10 +114,10 @@ router.route("/reviews/:reviewId/comments")
 
 router.route("/users")
   .get(async function (req, res) {
-    command = "SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users";
+    // command = "SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users";
 
     try {
-      const result = await pool.query(command);
+      const result = await pool.query(getUsersCommand);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);
@@ -120,10 +126,10 @@ router.route("/users")
 
 router.route("/users/:userId")
   .get(async function (req, res) {
-    const command = "SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users WHERE user_id = $1";
+    //const command = "SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users WHERE user_id = $1";
 
     try {
-      const result = await pool.query(command, [req.params.userId]);
+      const result = await pool.query(getUsersCommand + " WHERE user_id = $1", [req.params.userId]);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);
@@ -243,7 +249,7 @@ router.route("/query/:keyword")
   .get(async function (req, res) {
     const command_reviews = "SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE LOWER(review_body) LIKE '%' || LOWER($1) || '%'";
     const command_destinations = getDestinationsCommand + " WHERE LOWER(destination_name) LIKE '%' || LOWER($1) || '%' OR LOWER(description) LIKE '%' || LOWER($1) || '%' OR destination_category::TEXT LIKE '%' || LOWER($1) || '%'";
-    const command_users = "SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users WHERE LOWER(full_name) LIKE '%' || LOWER($1) || '%' OR LOWER(nickname) LIKE '%' || LOWER($1) || '%'";
+    const command_users = getUsersCommand + " WHERE LOWER(full_name) LIKE '%' || LOWER($1) || '%' OR LOWER(nickname) LIKE '%' || LOWER($1) || '%'";
     const command_comments = "SELECT * FROM comments JOIN (SELECT user_id, nickname FROM users) as users_info ON comments.author_id = users_info.user_id WHERE LOWER(content) LIKE '%' || LOWER($1) || '%'";
 
     try {

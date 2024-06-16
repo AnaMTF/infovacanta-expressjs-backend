@@ -271,4 +271,27 @@ router.route("/query/:keyword")
     }
   });
 
+router.route("/query/users/:userId/statistics")
+  .get(async function (req, res) {
+    const command = "SELECT r.author_id, \
+    COUNT(r.review_id) AS num_reviews, \
+      q.num_comments \
+FROM reviews r \
+    JOIN( \
+      SELECT author_id, COUNT(comment_id) AS num_comments \
+    FROM comments \
+    GROUP BY author_id\
+    ) AS q \
+ON r.author_id = q.author_id \
+WHERE r.author_id = $1 \
+GROUP BY r.author_id, q.num_comments";
+
+    try {
+      const result = await pool.query(command, [req.params.userId]);
+      res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  });
+
 module.exports = router;

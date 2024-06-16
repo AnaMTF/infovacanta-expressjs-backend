@@ -209,6 +209,26 @@ router.route("/destinations/:destinationId/reviews/:reviewId")
     }
   });
 
+router.route("/images")
+  .get(async function (req, res) {
+    try {
+      const result = await pool.query("SELECT * FROM images");
+      res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  });
+
+router.route("/images/:imageId")
+  .get(async function (req, res) {
+    try {
+      const result = await pool.query("SELECT * FROM images WHERE image_id = $1", [req.params.imageId]);
+      res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  });
+
 router.route("/query")
   .get(async function (req, res) {
     const command_reviews = "SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE LOWER(review_body) LIKE '%' || LOWER($1) || '%'";

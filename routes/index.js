@@ -294,4 +294,16 @@ GROUP BY r.author_id, q.num_comments";
     }
   });
 
+router.route("/query/reviews/max")
+  .get(async function (req, res) {
+    const command = "SELECT max(review_id) FROM reviews";
+
+    try {
+      const result = await pool.query(command);
+      res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  });
+
 module.exports = router;

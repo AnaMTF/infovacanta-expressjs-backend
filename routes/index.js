@@ -221,8 +221,14 @@ router.route("/images")
 
 router.route("/images/:imageId")
   .get(async function (req, res) {
+    let imageId = req.params.imageId;
+
+    if (imageId === "null") {
+      imageId = 57;
+    }
+
     try {
-      const result = await pool.query("SELECT * FROM images WHERE image_id = $1", [req.params.imageId]);
+      const result = await pool.query("SELECT * FROM images WHERE image_id = $1", [imageId]);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);

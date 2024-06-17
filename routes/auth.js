@@ -9,6 +9,12 @@ const GoogleStrategy = require("passport-google-oauth2"); // sper sa mearga
 const bcrypt = require("bcrypt");
 const pool = require("../database/postgres.database");
 
+const getUsersCommand = "WITH q_users AS ( \
+	SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users \
+) SELECT qu.*, i.location as pfp_location FROM q_users qu \
+JOIN images i \
+ON i.image_id = qu.profile_picture_id";
+
 /*
 * Middleware & Setup
 */
@@ -284,7 +290,7 @@ passport.serializeUser((user, cb) => {
 
 passport.deserializeUser(async (id, cb) => {
   try {
-    const result = await pool.query('SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users WHERE user_id = $1', [id]);
+    const result = await pool.query(getUsersCommand + ' WHERE user_id = $1', [id]);
     if (result.rows.length === 0) {
       return cb(new Error('User not found'));
     }

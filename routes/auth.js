@@ -194,20 +194,19 @@ router.route("/register/password")
       return res.status(400).json({ message: "Completati toate campurile" });
     }
 
-    let profile_picture_id = null;
-    let profile_picture = null;
-    let profile_picture_path = null;
-    if (req.files) {
-      profile_picture = req.files.profile_picture;
-      profile_picture_path = __dirname + "\\..\\public\\images\\profile_pictures\\" + profile_picture.name;
-      profile_picture_path_relative = "http://localhost:5000/" + profile_picture.name;
+
+    var profile_picture_id = 56; // MAGIC NUMBER: 56 este id-ul unei poze default
+    if (req.files.profile_picture) {
+      console.log("Am primit o poza de profil");
+
       try {
-        profile_picture.mv(profile_picture_path);
-        const result = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["profile", profile_picture_path_relative]);
-        profile_picture_id = result.rows[0].image_id;
+        profile_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["profile", "http://localhost:5000/" + req.files.profile_picture.name]);
+        profile_picture_id = profile_picture_id.rows[0].image_id;
+        req.files.profile_picture.mv(__dirname + "\\..\\public\\images\\profile_pictures\\" + req.files.profile_picture.name);
       } catch (error) {
         console.log(error.message);
       }
+
     }
 
     try {
@@ -223,17 +222,11 @@ router.route("/register/password")
         }
 
         try {
-          const result = await pool.query("INSERT INTO users (email, nickname, full_name, user_password) VALUES ($1, $2, $3, $4) RETURNING user_id", [email, nickname, full_name, hash]);
+          const result = await pool.query("INSERT INTO users (email, nickname, full_name, user_password, profile_picture_id) VALUES ($1, $2, $3, $4, $5) RETURNING user_id", [email, nickname, full_name, hash, profile_picture_id]);
           const user_id = result.rows[0].user_id;
 
-          // console.log("profile_picture_path: ", profile_picture_path);
-          // console.log("user_id: ", user_id);
-
-          if (profile_picture_path) {
-            await pool.query("UPDATE users SET profile_picture_id = $1 WHERE user_id = $2", [profile_picture_id, user_id]);
-          }
-
-          return res.status(201).json({ message: "Utilizatorul a fost creat" });
+          return res.redirect("http://localhost:3000/login");
+          // return res.status(201).json({ message: "Utilizatorul a fost creat" });
         } catch (error) {
           return res.status(500).json({ message: error.message });
         }

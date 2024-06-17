@@ -223,7 +223,7 @@ router.route("/images/:imageId")
   .get(async function (req, res) {
     let imageId = req.params.imageId;
 
-    if (imageId === "null") {
+    if (imageId === "null" || imageId === "undefined") {
       imageId = 57;
     }
 

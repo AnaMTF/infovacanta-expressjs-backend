@@ -4,6 +4,9 @@ const pool = require("../database/postgres.database");
 const bodyParser = require("body-parser");
 const router = express.Router();
 
+router.use(bodyParser.json());
+router.use(bodyParser.urlencoded({ extended: true }));
+
 // router.use(cors({ origin: "http://localhost:3000" }));
 // router.use(bodyParser.json());
 // router.use(bodyParser.urlencoded({ extended: true }));
@@ -105,16 +108,16 @@ router.route("/reviews/:reviewId/comments")
     } catch (error) {
       res.status(500).json(error);
     }
-  })
-  .post(async function (req, res) {
-    console.log(req.body);
-    try {
-      await pool.query("INSERT INTO comments (content, author_id, review_id) VALUES ($1, $2, $3)", [req.body.content, req.body.author_id, req.params.reviewId]);
-      res.status(201).json({ message: "Comentariul a fost adăugat" });
-    } catch (error) {
-      res.status(500).json(error);
-    }
   });
+// .post(async function (req, res) {
+//   console.log(req.body);
+//   try {
+//     await pool.query("INSERT INTO comments (content, author_id, review_id) VALUES ($1, $2, $3)", [req.body.content, req.body.author_id, req.params.reviewId]);
+//     res.status(201).json({ message: "Comentariul a fost adăugat" });
+//   } catch (error) {
+//     res.status(500).json(error);
+//   }
+// });
 
 router.route("/users")
   .get(async function (req, res) {
@@ -332,6 +335,19 @@ router.route("/query/reviews/max")
       const result = await pool.query(command);
       res.status(200).json(result.rows);
     } catch (error) {
+      res.status(500).json(error);
+    }
+  });
+
+router.route("/comments-api")
+  .post(async function (req, res) {
+    console.log(req.body);
+    // res.status(201).json(req.body);
+
+    try {
+      await pool.query("INSERT INTO comments (content, author_id, review_id) VALUES ($1, $2, $3)", [req.body.content, req.body.author_id, req.body.review_id]);
+    } catch (error) {
+      console.error(error);
       res.status(500).json(error);
     }
   });

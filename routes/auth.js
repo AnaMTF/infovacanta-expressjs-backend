@@ -9,11 +9,15 @@ const GoogleStrategy = require("passport-google-oauth2"); // sper sa mearga
 const bcrypt = require("bcrypt");
 const pool = require("../database/postgres.database");
 
-const getUsersCommand = "WITH q_users AS ( \
-	SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users \
-) SELECT qu.*, i.location as pfp_location FROM q_users qu \
-JOIN images i \
-ON i.image_id = qu.profile_picture_id";
+const getUsersCommand = "WITH q2_users AS ( \
+  WITH q_users AS( \
+  SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id, user_password FROM users \
+  ) SELECT qu.*, i.location as pfp_location FROM q_users qu \
+  JOIN images i  \
+  ON i.image_id = qu.profile_picture_id \
+  ) SELECT qu2.*, i.location as bg_location FROM q2_users qu2 \
+  JOIN images i \
+  on i.image_id = qu2.background_picture_id ";
 
 /*
 * Middleware & Setup
@@ -45,7 +49,8 @@ const passwordStrategy = new LocalStrategy(async function verify(username, passw
   // console.log("username: ", username);
   // console.log("password: ", password);
   try {
-    const result = await pool.query("SELECT * FROM users WHERE email = $1", [username]);
+    // const result = await pool.query("SELECT * FROM users WHERE email = $1", [username]);
+    const result = await pool.query(getUsersCommand + " WHERE email = $1", [username]);
     if (result.rows.length === 0) {
       return cb(null, false, { message: "Utilizatorul nu exista" });
     }

@@ -43,11 +43,15 @@ JOIN \
     images i ON pd.destination_picture_id = i.image_id";
 
 
-const getUsersCommand = "WITH q_users AS ( \
-	SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users \
-) SELECT qu.*, i.location as pfp_location FROM q_users qu \
-JOIN images i \
-ON i.image_id = qu.profile_picture_id";
+const getUsersCommand = "WITH q2_users AS ( \
+	WITH q_users AS( \
+  SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users \
+  ) SELECT qu.*, i.location as pfp_location FROM q_users qu \
+  JOIN images i  \
+  ON i.image_id = qu.profile_picture_id \
+  ) SELECT qu2.*, i.location as bg_location FROM q2_users qu2 \
+  JOIN images i \
+  on i.image_id = qu2.background_picture_id ";
 /*
  * Rute
  */

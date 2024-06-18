@@ -95,7 +95,7 @@ router.route("/reviews")
         [req.body.author_id, destination_category, req.body.review_body, req.body.date_posted, destination_id]
       );
 
-      res.status(201); // HTTP STATUS 201: Created
+      res.redirect("http://localhost:3000/main"); // HTTP STATUS 201: Created
 
     } catch (err) {
       res.status(500).json(err);
@@ -123,9 +123,10 @@ router.route("/reviews/:reviewId")
     }
   })
   .delete(async function (req, res) {
+    console.log("Am primit un request de stergere a unui review");
     try {
       await pool.query("DELETE FROM reviews WHERE review_id = $1", [req.params.review_id]);
-      res
+      res.status(204); // HTTP STATUS 204: No Content
     } catch (error) {
       res.status(500).json(error);
     }

@@ -19,9 +19,9 @@ const getReviewsCommand = "SELECT * FROM reviews \
     JOIN destinations \
     ON reviews.destination_id = destinations.destination_id \
     JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query \
-    ON reviews.author_id = user_query.user_id \
-    JOIN (select review_id, count(comment_id) as number_of_comments from comments group by review_id) as comm_query \
-    ON reviews.review_id = comm_query.review_id";
+    ON reviews.author_id = user_query.user_id";
+// JOIN (select review_id, count(comment_id) as number_of_comments from comments group by review_id) as comm_query \
+// ON reviews.review_id = comm_query.review_id";
 
 const getDestinationsCommand = "WITH processed_destinations AS ( \
     SELECT \
@@ -123,9 +123,9 @@ router.route("/reviews/:reviewId")
     }
   })
   .delete(async function (req, res) {
-    console.log("Am primit un request de stergere a unui review");
+    console.log("Am primit un request de stergere a review-ului cu id-ul " + req.params.reviewId + " din partea clientului");
     try {
-      await pool.query("DELETE FROM reviews WHERE review_id = $1", [req.params.review_id]);
+      await pool.query("DELETE FROM reviews WHERE review_id = $1", [req.params.reviewId]);
       res.status(204); // HTTP STATUS 204: No Content
     } catch (error) {
       res.status(500).json(error);

@@ -5,7 +5,7 @@ const fileUpload = require('express-fileupload');
 const pool = require("../database/postgres.database");
 const bodyParser = require("body-parser");
 const router = express.Router();
-
+const bcrypt = require("bcrypt");
 
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
@@ -377,6 +377,68 @@ router.route("/comments-api")
 
     try {
       await pool.query("INSERT INTO comments (content, author_id, review_id) VALUES ($1, $2, $3)", [req.body.content, req.body.author_id, req.body.review_id]);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json(error);
+    }
+  });
+
+router.route("/save-review")
+  .get(async function (req, res) {
+    res.status(200).json({ message: "GET request received" });
+  })
+  .post(async function (req, res) {
+    console.log(req.body);
+  })
+  .delete(async function (req, res) {
+    console.log(req.body);
+  });
+
+router.route("/change-password")
+  .get(async function (req, res) {
+    res.status(200).json({ message: "GET request received" });
+  })
+  .post(async function (req, res) {
+    console.log(req.body);
+    // res.status(201).json(req.body);
+    // res.status(200).json(req.body);
+
+    try {
+
+      const result = await pool.query("SELECT user_password FROM users WHERE user_id = $1", [req.body.user_id]);
+      const database_password_hash = result.rows[0].user_password;
+
+      // console.log(database_password_hash);
+      // res.json(database_password_hash);
+
+      // console.log(result);
+      // res.send(result);
+
+      bcrypt.compare(req.body.old_password, database_password_hash, function (err, result) {
+        if (err) {
+          console.log(err);
+          res.status(500).json(err);
+        }
+
+        if (result) {
+          bcrypt.hash(req.body.new_password, 10, async function (err, hash) {
+            if (err) {
+              console.log(err);
+              res.status(500).json(err);
+            }
+
+            try {
+              await pool.query("UPDATE users SET user_password = $1 WHERE user_id = $2", [hash, req.body.user_id]);
+              console.log("Parola a fost schimbata");
+              res.status(200);
+            } catch (error) {
+              console.error(error);
+              res.status(500).json(error);
+            }
+          });
+
+        }
+      });
     } catch (error) {
       console.error(error);
       res.status(500).json(error);

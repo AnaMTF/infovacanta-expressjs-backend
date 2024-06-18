@@ -72,7 +72,34 @@ router.route("/reviews")
     }
   })
   .post(async function (req, res) {
-    res.status(201).json({ message: "Recenzia a fost adăugată" });
+    // const destinationname = req.body.destinationname;
+    // const reviewbody = req.body.reviewbody;
+
+    // const authornickname = req.session.passport.user.nickname;
+    try {
+      var result = await pool.query(
+        "SELECT destination_id, destination_category FROM destinations WHERE destination_name = $1",
+        [req.body.destination_name]
+      );
+
+      if (result.rows.length === 0) {
+        res.status(404).json({ message: "Destinatia nu exista" });
+      }
+
+      const destination_id = result.rows[0].destination_id;
+      const destination_category = result.rows[0].destination_category;
+
+      var result = await pool.query(
+        "INSERT INTO reviews (author_id, review_category, review_body, date_posted, destination_id) \
+            VALUES ($1, $2, $3, $4, $5) RETURNING *",
+        [req.body.author_id, destination_category, req.body.review_body, req.body.date_posted, destination_id]
+      );
+
+      res.status(201); // HTTP STATUS 201: Created
+
+    } catch (err) {
+      res.status(500).json(err);
+    }
   });
 
 router.route("/reviews/:reviewId")

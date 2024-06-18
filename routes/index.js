@@ -1,11 +1,15 @@
 const express = require("express");
+const fileUpload = require('express-fileupload');
+
 // const path = require("path");
 const pool = require("../database/postgres.database");
 const bodyParser = require("body-parser");
 const router = express.Router();
 
+
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
+router.use(fileUpload());
 
 // router.use(cors({ origin: "http://localhost:3000" }));
 // router.use(bodyParser.json());
@@ -140,6 +144,33 @@ router.route("/users/:userId")
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);
+    }
+  })
+  .post(async function (req, res) {
+    console.log(req.body);
+
+    var profile_picture_id = null;
+
+    if (req.files?.profile_picture) {
+      console.log("Am primit o poza de profil");
+      try {
+        profile_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["profile", "http://localhost:5000/" + req.files.profile_picture.name]);
+        profile_picture_id = profile_picture_id.rows[0].image_id;
+        req.files.profile_picture.mv(__dirname + "\\..\\public\\images\\profile_pictures\\" + req.files.profile_picture.name);
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+
+    try {
+      if (profile_picture_id) {
+        await pool.query("UPDATE users SET profile_picture_id = $1 WHERE user_id = $2", [profile_picture_id, req.params.userId]);
+      }
+
+      await pool.query("UPDATE users SET email = $1, full_name = $2, nickname = $3 WHERE user_id = $4", [req.body.email, req.body.full_name, req.body.nickname, req.params.userId]);
+      res.redirect("http://localhost:3000/profil");
+    } catch (error) {
+      console.log(error.message);
     }
   });
 

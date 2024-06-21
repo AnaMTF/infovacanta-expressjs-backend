@@ -29,7 +29,7 @@ const port = 5000;
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "public/images")));
 app.use(express.static(path.join(__dirname, "public/images/profile_pictures")));
-app.use(morgan("dev"));
+app.use(morgan("common"));
 app.use(cors());
 app.use("/", indexRouter);
 app.use("/auth", authRouter);

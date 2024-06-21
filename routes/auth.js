@@ -212,7 +212,7 @@ router.route("/register/password")
 
 
     var profile_picture_id = 56; // MAGIC NUMBER: 56 este id-ul unei poze default
-    if (req.files.profile_picture) {
+    if (req.files?.profile_picture) {
       console.log("Am primit o poza de profil");
 
       try {

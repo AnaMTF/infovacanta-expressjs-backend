@@ -419,17 +419,17 @@ GROUP BY r.author_id, q.num_comments";
     }
   });
 
-router.route("/query/reviews/max")
-  .get(async function (req, res) {
-    const command = "SELECT max(review_id) FROM reviews";
+// router.route("/query/reviews/max")
+//   .get(async function (req, res) {
+//     const command = "SELECT max(review_id) FROM reviews";
 
-    try {
-      const result = await pool.query(command);
-      res.status(200).json(result.rows);
-    } catch (error) {
-      res.status(500).json(error);
-    }
-  });
+//     try {
+//       const result = await pool.query(command);
+//       res.status(200).json(result.rows);
+//     } catch (error) {
+//       res.status(500).json(error);
+//     }
+//   });
 
 router.route("/comments-api")
   .post(async function (req, res) {
@@ -525,6 +525,17 @@ router.route("/change-password")
 
         }
       });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json(error);
+    }
+  });
+
+router.route("/next-val/reviews")
+  .get(async function (req, res) {
+    try {
+      const result = await pool.query("SELECT nextval('reviews_reviewid_seq')");
+      res.status(200).json(result.rows[0].nextval);
     } catch (error) {
       console.error(error);
       res.status(500).json(error);

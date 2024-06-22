@@ -113,20 +113,32 @@ router.route("/reviews/:reviewId")
   })
   .put(async function (req, res) {
     console.log(req.body);
-    const command = "UPDATE reviews SET review_body = $1, rating = $2, review_picture_id = $3 WHERE review_id = $4";
+    res.status(200).json(req.body);
+    // const command = "UPDATE reviews SET review_body = $1, rating = $2, review_picture_id = $3 WHERE review_id = $4";
 
-    try {
-      await pool.query(command, [req.body.review_body, req.body.rating, req.body.review_picture_id, req.params.review_id]);
-      res.status(200).json({ message: "Review-ul a fost actualizat" });
-    } catch (error) {
-      res.status(500).json(error);
-    }
+    // try {
+    //   await pool.query(command, [req.body.review_body, req.body.rating, req.body.review_picture_id, req.params.review_id]);
+    //   res.status(200).json({ message: "Review-ul a fost actualizat" });
+    // } catch (error) {
+    //   res.status(500).json(error);
+    // }
   })
   .delete(async function (req, res) {
     console.log("Am primit un request de stergere a review-ului cu id-ul " + req.params.reviewId + " din partea clientului");
     try {
       await pool.query("DELETE FROM reviews WHERE review_id = $1", [req.params.reviewId]);
       res.status(204); // HTTP STATUS 204: No Content
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  });
+
+router.route("/reviews/:reviewId/basic")
+  .get(async function (req, res) {
+    const { getEditReviewById } = require("../utils/sql_commands");
+    try {
+      const result = await pool.query(getEditReviewById, [req.params.reviewId]);
+      res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);
     }

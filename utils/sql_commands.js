@@ -65,8 +65,19 @@ WHERE
 ORDER BY
     r.date_posted DESC`;
 
+const getEditReviewById = `SELECT
+    d.destination_name,
+    r.review_body
+FROM
+    reviews r
+LEFT JOIN
+    destinations d ON r.destination_id = d.destination_id
+WHERE
+    r.review_id = $1`;
+
 module.exports = {
     getReviewCards,
     getReviewCardsWhereAuthorId,
-    getReviewCardsWhereDestinationId
+    getReviewCardsWhereDestinationId,
+    getEditReviewById
 }

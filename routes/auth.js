@@ -26,7 +26,7 @@ const router = express.Router();
 const saltRounds = 10;
 
 router.use(bodyParser.json());
-router.use(bodyParser.urlencoded({ extended: true }));
+router.use(bodyParser.urlencoded({ extended: false }));
 router.use(session({
   secret: "VERY_SECRET_KEY",
   resave: false,

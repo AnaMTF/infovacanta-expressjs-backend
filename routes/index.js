@@ -151,6 +151,17 @@ router.route("/reviews/:reviewId/comments")
 //   }
 // });
 
+router.route("/review-cards")
+  .get(async function (req, res) {
+    const { getReviewCards } = require("../utils/sql_commands");
+    try {
+      const result = await pool.query(getReviewCards);
+      res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  });
+
 router.route("/users")
   .get(async function (req, res) {
     // command = "SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users";
@@ -232,6 +243,17 @@ router.route("/users/:userId/reviews/:reviewId/comments")
     }
   });
 
+router.route("/users/:userId/review-cards")
+  .get(async function (req, res) {
+    const { getReviewCardsWhereAuthorId } = require("../utils/sql_commands");
+    try {
+      const result = await pool.query(getReviewCardsWhereAuthorId, [req.params.userId]);
+      res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  });
+
 router.route("/destinations")
   .get(async function (req, res) {
     // console.log(req.passport.session || "No session");
@@ -269,6 +291,17 @@ router.route("/destinations/:destinationId/reviews/:reviewId")
   .get(async function (req, res) {
     try {
       const result = await pool.query(getReviewsCommand + " WHERE destinations.destination_id = $1 AND reviews.review_id = $2", [req.params.destinationId, req.params.reviewId]);
+      res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  });
+
+router.route("/destinations/:destinationId/review-cards")
+  .get(async function (req, res) {
+    const { getReviewCardsWhereDestinationId } = require("../utils/sql_commands");
+    try {
+      const result = await pool.query(getReviewCardsWhereDestinationId, [req.params.destinationId]);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);

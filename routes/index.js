@@ -535,7 +535,7 @@ router.route("/next-val/reviews")
   .get(async function (req, res) {
     try {
       const result = await pool.query("SELECT nextval('reviews_reviewid_seq')");
-      res.status(200).json(result.rows[0].nextval);
+      res.status(200).json(result.rows);
     } catch (error) {
       console.error(error);
       res.status(500).json(error);

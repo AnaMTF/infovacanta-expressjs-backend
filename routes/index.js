@@ -221,6 +221,7 @@ router.route("/users/:userId")
     console.log(req.body);
 
     var profile_picture_id = null;
+    var background_picture_id = null;
 
     if (req.files?.profile_picture) {
       console.log("Am primit o poza de profil");
@@ -233,9 +234,24 @@ router.route("/users/:userId")
       }
     }
 
+    if (req.files?.background_picture) {
+      console.log("Am primit o poza de fundal");
+      try {
+        background_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["background", "http://localhost:5000/" + req.files.background_picture.name]);
+        background_picture_id = background_picture_id.rows[0].image_id;
+        req.files.background_picture.mv(__dirname + "\\..\\public\\images\\background_pictures\\" + req.files.background_picture.name);
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+
     try {
       if (profile_picture_id) {
         await pool.query("UPDATE users SET profile_picture_id = $1 WHERE user_id = $2", [profile_picture_id, req.params.userId]);
+      }
+
+      if (background_picture_id) {
+        await pool.query("UPDATE users SET background_picture_id = $1 WHERE user_id = $2", [background_picture_id, req.params.userId]);
       }
 
       await pool.query("UPDATE users SET email = $1, full_name = $2, nickname = $3 WHERE user_id = $4", [req.body.email, req.body.full_name, req.body.nickname, req.params.userId]);

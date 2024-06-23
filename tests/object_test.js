@@ -27,3 +27,9 @@ const user_new = {
 
 delete user_new.password;
 console.log(user_new); // { id: 1, username: 'john_doe', password: 'password', saved: [ 1, 2, 3 ] }
+
+const user_new_2 = {
+    ...user_new,
+    saved: user_new.saved.filter(review_id => review_id !== 2)
+};
+console.log(user_new_2); // { id: 1, username: 'john_doe', password: 'password', saved: 4 }

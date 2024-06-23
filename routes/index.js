@@ -477,40 +477,45 @@ router.route("/comments-api")
   });
 
 router.route("/save-review")
-  .get(async function (req, res) {
-    try {
-      const result = await pool.query("SELECT * FROM saved_reviews");
-      res.status(200).json(result.rows);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json(error);
-    }
-  })
+  // .get(async function (req, res) {
+  //   try {
+  //     const result = await pool.query("SELECT * FROM saved_reviews");
+  //     res.status(200).json(result.rows);
+  //   } catch (error) {
+  //     console.error(error);
+  //     res.status(500).json(error);
+  //   }
+  // })
   .post(async function (req, res) {
+    console.log("/save-review -- REQUEST PRIMIT")
     console.log(req.body);
 
     try {
 
       await pool.query("INSERT INTO saved_reviews (user_id, review_id) VALUES ($1, $2)", [req.body.user_id, req.body.review_id]);
-      res.status(201);
+      res.status(201).json({ message: "Review adaugat la salvate" });
     } catch (error) {
       console.error(error);
       res.status(500).json(error);
     }
-  })
-  .delete(async function (req, res) {
+  });
+
+router.route("/unsave-review")
+  .post(async function (req, res) {
+    console.log("/unsave-review -- REQUEST PRIMIT")
     console.log(req.body);
 
     try {
 
       await pool.query("DELETE FROM saved_reviews WHERE user_id = $1 AND review_id = $2", [req.body.user_id, req.body.review_id]);
-      res.status(204); // HTTP STATUS 204: No Content
+      res.status(200).json({ message: "Review sters de la salvate" });
     } catch (error) {
       console.error(error);
       res.status(500).json(error);
     }
 
   });
+
 
 router.route("/change-password")
   .get(async function (req, res) {

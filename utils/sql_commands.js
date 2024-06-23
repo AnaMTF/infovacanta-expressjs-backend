@@ -138,6 +138,36 @@ LEFT JOIN
 WHERE
     u.email = $1`;
 
+const getAllComments = `SELECT
+    u.nickname,
+    c.date_posted,
+    c.content,
+    img.location AS profile_picture_location
+FROM
+    comments c
+LEFT JOIN
+    users u ON c.author_id = u.user_id
+LEFT JOIN
+    images img ON u.profile_picture_id = img.image_id
+ORDER BY
+    c.date_posted DESC`;
+
+const getCommentsByReviewId = `SELECT
+    u.nickname,
+    c.date_posted,
+    c.content,
+    img.location AS profile_picture_location
+FROM
+    comments c
+LEFT JOIN
+    users u ON c.author_id = u.user_id
+LEFT JOIN
+    images img ON u.profile_picture_id = img.image_id
+WHERE
+    c.review_id = $1
+ORDER BY
+    c.date_posted DESC;`;
+
 module.exports = {
     getReviewCards,
     getReviewCardsWhereAuthorId,
@@ -146,5 +176,7 @@ module.exports = {
     queryReviewCardsByKeyword,
     getUserInfoById,
     getReviewIdsSavedByUser,
-    getUserInfoByEmailWithPassword
+    getUserInfoByEmailWithPassword,
+    getAllComments,
+    getCommentsByReviewId,
 }

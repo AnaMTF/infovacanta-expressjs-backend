@@ -166,8 +166,10 @@ router.route("/reviews/:reviewId/basic")
 
 router.route("/reviews/:reviewId/comments")
   .get(async function (req, res) {
+    const { getCommentsByReviewId } = require("../utils/sql_commands");
+
     try {
-      const result = await pool.query("SELECT * FROM comments JOIN (SELECT user_id, nickname FROM users) as users_info ON comments.author_id = users_info.user_id WHERE review_id = $1", [req.params.reviewId]);
+      const result = await pool.query(getCommentsByReviewId, [req.params.reviewId]);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);
@@ -481,11 +483,13 @@ GROUP BY r.author_id, q.num_comments";
 
 router.route("/comments-api")
   .post(async function (req, res) {
+    console.log("/comments-api -- REQUEST PRIMIT")
     console.log(req.body);
     // res.status(201).json(req.body);
 
     try {
       await pool.query("INSERT INTO comments (content, author_id, review_id) VALUES ($1, $2, $3)", [req.body.content, req.body.author_id, req.body.review_id]);
+      res.redirect("http://localhost:3000/main"); // HTTP STATUS 201: Created
     } catch (error) {
       console.error(error);
       res.status(500).json(error);

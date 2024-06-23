@@ -55,15 +55,15 @@ const passwordStrategy = new LocalStrategy(async function verify(username, passw
   // console.log("password: ", password);
   try {
     // const result = await pool.query("SELECT * FROM users WHERE email = $1", [username]);
-    const { getUserInfoByEmailWithPassword } = require("../utils/sql_commands");
+    const { getUserInfoByEmailWithPassword, getReviewIdsSavedByUser } = require("../utils/sql_commands");
 
     const user_result = await pool.query(getUserInfoByEmailWithPassword, [username]);
 
-    if (result.rows.length === 0) {
+    if (user_result.rows.length === 0) {
       return cb(null, false, { message: "Utilizatorul nu exista" });
     }
 
-    const saved_reviews_result = await pool.query(getReviewIdsSavedByUser, [user_result[0]?.user_id]);
+    const saved_reviews_result = await pool.query(getReviewIdsSavedByUser, [user_result.rows[0]?.user_id]);
 
     const user = {
       ...user_result.rows[0],

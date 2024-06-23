@@ -25,4 +25,5 @@ const user_new = {
     saved: saved_review_ids.map(review => review.review_id)
 }
 
+delete user_new.password;
 console.log(user_new); // { id: 1, username: 'john_doe', password: 'password', saved: [ 1, 2, 3 ] }

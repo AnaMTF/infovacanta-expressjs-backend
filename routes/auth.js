@@ -314,7 +314,7 @@ passport.deserializeUser(async (id, cb) => {
       saved_reviews: saved_reviews_result.rows.map(review => review.review_id)
     };
 
-    cb(null, result.rows[0]); // Fetch full user details
+    cb(null, user); // Fetch full user details
   } catch (err) {
     cb(err);
   }

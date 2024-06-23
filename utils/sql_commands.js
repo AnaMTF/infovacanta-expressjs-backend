@@ -98,10 +98,35 @@ WHERE
 ORDER BY
     r.date_posted DESC`;
 
+const getUserInfoById = `SELECT
+    u.user_id,
+    u.email,
+    u.full_name,
+    u.nickname,
+    img_profile.location AS profile_picture_location,
+    img_background.location AS background_picture_location
+FROM
+    users u
+LEFT JOIN
+    images img_profile ON u.profile_picture_id = img_profile.image_id
+LEFT JOIN
+    images img_background ON u.background_picture_id = img_background.image_id
+WHERE
+    u.user_id = $1`;
+
+const getReviewIdsSavedByUser = `SELECT
+    review_id
+FROM
+    saved_reviews
+WHERE
+    user_id = $1`;
+
 module.exports = {
     getReviewCards,
     getReviewCardsWhereAuthorId,
     getReviewCardsWhereDestinationId,
     getEditReviewById,
-    queryReviewCardsByKeyword
+    queryReviewCardsByKeyword,
+    getUserInfoById,
+    getReviewIdsSavedByUser
 }

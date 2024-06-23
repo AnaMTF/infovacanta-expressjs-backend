@@ -299,11 +299,21 @@ passport.serializeUser((user, cb) => {
 });
 
 passport.deserializeUser(async (id, cb) => {
+  const { getUserInfoById, getReviewIdsSavedByUser } = require("../utils/sql_commands");
+
   try {
-    const result = await pool.query(getUsersCommand + ' WHERE user_id = $1', [id]);
+    const user_result = await pool.query(getUserInfoById, [id]);
+    const saved_reviews_result = await pool.query(getReviewIdsSavedByUser, [id]);
+
     if (result.rows.length === 0) {
       return cb(new Error('User not found'));
     }
+
+    const user = {
+      ...user_result.rows[0],
+      saved_reviews: saved_reviews_result.rows.map(review => review.review_id)
+    };
+
     cb(null, result.rows[0]); // Fetch full user details
   } catch (err) {
     cb(err);

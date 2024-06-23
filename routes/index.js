@@ -113,15 +113,35 @@ router.route("/reviews/:reviewId")
   })
   .put(async function (req, res) {
     console.log(req.body);
-    res.status(200).json(req.body);
-    // const command = "UPDATE reviews SET review_body = $1, rating = $2, review_picture_id = $3 WHERE review_id = $4";
+    // res.status(200).json(req.body);
+    const command = "UPDATE reviews SET review_body = $1, rating = $2, review_picture_id = $3 WHERE review_id = $4";
 
-    // try {
-    //   await pool.query(command, [req.body.review_body, req.body.rating, req.body.review_picture_id, req.params.review_id]);
-    //   res.status(200).json({ message: "Review-ul a fost actualizat" });
-    // } catch (error) {
-    //   res.status(500).json(error);
-    // }
+    try {
+      var result = await pool.query(
+        "SELECT destination_id, destination_category FROM destinations WHERE destination_name = $1",
+        [req.body.destination_name]
+      );
+
+      if (result.rows.length === 0) {
+        res.status(404).json({ message: "Destinatia nu exista" });
+      }
+
+      const destination_id = result.rows[0].destination_id;
+      const destination_category = result.rows[0].destination_category;
+
+      // var result = await pool.query(
+      //   "INSERT INTO reviews (author_id, review_category, review_body, date_posted, destination_id) \
+      //       VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      //   [req.body.author_id, destination_category, req.body.review_body, req.body.date_posted, destination_id]
+      // );
+
+      await pool.query("UPDATE reviews SET review_body = $1, review_category = $2, destination_id = $3, date_posted = $4 WHERE review_id = $5", [req.body.review_body, destination_category, destination_id, req.params.date_posted, req.params.reviewId]);
+
+      res.redirect("http://localhost:3000/main"); // HTTP STATUS 201: Created
+
+    } catch (err) {
+      res.status(500).json(err);
+    }
   })
   .delete(async function (req, res) {
     console.log("Am primit un request de stergere a review-ului cu id-ul " + req.params.reviewId + " din partea clientului");
@@ -384,13 +404,13 @@ router.route("/query/destinations/:destinationLink")
 
 router.route("/query/:keyword")
   .get(async function (req, res) {
-    const command_reviews = "SELECT * FROM reviews JOIN destinations ON reviews.destination_id = destinations.destination_id JOIN (SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users) as user_query ON reviews.author_id = user_query.user_id WHERE LOWER(review_body) LIKE '%' || LOWER($1) || '%'";
+    const { queryReviewCardsByKeyword } = require("../utils/sql_commands");
     const command_destinations = getDestinationsCommand + " WHERE LOWER(destination_name) LIKE '%' || LOWER($1) || '%' OR LOWER(description) LIKE '%' || LOWER($1) || '%' OR destination_category::TEXT LIKE '%' || LOWER($1) || '%'";
     const command_users = getUsersCommand + " WHERE LOWER(full_name) LIKE '%' || LOWER($1) || '%' OR LOWER(nickname) LIKE '%' || LOWER($1) || '%'";
     const command_comments = "SELECT * FROM comments JOIN (SELECT user_id, nickname FROM users) as users_info ON comments.author_id = users_info.user_id WHERE LOWER(content) LIKE '%' || LOWER($1) || '%'";
 
     try {
-      const result_reviews = await pool.query(command_reviews, [req.params.keyword]);
+      const result_reviews = await pool.query(queryReviewCardsByKeyword, [req.params.keyword]);
       const result_destinations = await pool.query(command_destinations, [req.params.keyword]);
       const result_users = await pool.query(command_users, [req.params.keyword]);
       const result_comments = await pool.query(command_comments, [req.params.keyword]);

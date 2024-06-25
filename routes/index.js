@@ -196,6 +196,17 @@ router.route("/review-cards")
     }
   });
 
+router.route("/comments")
+  .get(async function (req, res) {
+    const { getAllComments } = require("../utils/sql_commands");
+    try {
+      const result = await pool.query(getAllComments);
+      res.status(200).json(result.rows);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  });
+
 router.route("/users")
   .get(async function (req, res) {
     // command = "SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users";

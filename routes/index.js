@@ -146,8 +146,12 @@ router.route("/reviews/:reviewId")
   .delete(async function (req, res) {
     console.log("Am primit un request de stergere a review-ului cu id-ul " + req.params.reviewId + " din partea clientului");
     try {
+      // review_id este foreign key in tabelele saved_reviews si comments
+      // inainte de a rezolva stergerea din reviews, trebuie sa stergem si din celelalte tabele
+      await pool.query("DELETE FROM saved_reviews WHERE review_id = $1", [req.params.reviewId]);
+      await pool.query("DELETE FROM comments WHERE review_id = $1", [req.params.reviewId]);
       await pool.query("DELETE FROM reviews WHERE review_id = $1", [req.params.reviewId]);
-      res.status(204); // HTTP STATUS 204: No Content
+      res.status(200).json({ mesaj: `Recenzia cu ID-ul ${req.params.reviewId} a fost stearsa` });
     } catch (error) {
       res.status(500).json(error);
     }

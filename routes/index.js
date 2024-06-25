@@ -500,7 +500,8 @@ router.route("/comments-api")
 
     try {
       await pool.query("INSERT INTO comments (content, author_id, review_id) VALUES ($1, $2, $3)", [req.body.content, req.body.author_id, req.body.review_id]);
-      res.redirect("http://localhost:3000/main"); // HTTP STATUS 201: Created
+      // res.redirect("http://localhost:3000/main"); // HTTP STATUS 201: Created
+      res.status(201);
     } catch (error) {
       console.error(error);
       res.status(500).json(error);

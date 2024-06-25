@@ -1,6 +1,7 @@
 const express = require("express");
 const session = require("express-session");
 const fileUpload = require('express-fileupload');
+const cors = require("cors");
 
 const bodyParser = require("body-parser");
 const passport = require("passport");
@@ -8,27 +9,36 @@ const LocalStrategy = require("passport-local");
 const GoogleStrategy = require("passport-google-oauth2"); // sper sa mearga
 const bcrypt = require("bcrypt");
 const pool = require("../database/postgres.database");
-
+const dotenv = require("dotenv");
 /*
 * Middleware & Setup
 */
+dotenv.config();
+
 const router = express.Router();
 const saltRounds = 10;
 
+router.use(cors({
+  credentials: true,
+  origin: process.env.CLIENT_URL
+}));
+
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: false }));
+
 router.use(session({
-  secret: "VERY_SECRET_KEY",
+  secret: process.env.COOKIE_SECRET,
   resave: false,
   saveUninitialized: true,
-  // cookie: {
-  //   secure: false, //<-- Setarea true necesita HTTPS
-  //   maxAge: 1000 * 60 * 60 * 24 * 30, //<-- 30 de zile
-  // },
+  cookie: {
+    secure: false, //<-- Setarea true necesita HTTPS
+    sameSite: "lax", //<-- Setarea "strict" necesita HTTPS
+    maxAge: 1000 * 60 * 60 * 24 * 30, //<-- 30 de zile
+  },
 }));
 router.use(passport.initialize());
 router.use(passport.session());
-// router.use(passport.authenticate("session"));
+router.use(passport.authenticate("session"));
 // router.use(cors({ origin: "http://localhost:3000" }));
 router.use(fileUpload({
   limits: {
@@ -80,12 +90,8 @@ const passwordStrategy = new LocalStrategy(async function verify(username, passw
 const googleStragegy = new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: "http://localhost:3000/main", // <-- DE COMPLETAT
-  userProfileURL: "http://localhost:3000/profil"
+  callbackURL: process.env.CLIENT_CALLBACK_URL,
 }, async function verify(accessToken, refreshToken, profile, cb) {
-  console.log("Informatii Debug functie `googleStrategy`");
-  console.log("utilizatorul autentificat: ", profile);
-
   // const { getUserInfoByEmailWithPassword } = require("../utils/sql_commands");
 
   // try {
@@ -96,13 +102,18 @@ const googleStragegy = new GoogleStrategy({
   //     return cb(null, result.rows[0]);
   //   }
 
+  //   var result = await pool.query(
+  //     "INSERT INTO users (email, full_name, nickname, profile_picture_id, background_picture_id) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+  //     [profile.email, profile.displayName, profile.displayName.toLowerCase().replaceAll(" ", "-"), 56, 57]
+  //   );
 
-
-  //   var result = await pool.query(insert_command_user, [profile.email, profile.displayName.toLowerCase().replaceAll(" ", "-"), profile.displayName, null]);
   //   return cb(null, result.rows[0]);
   // } catch (error) {
-  //   return cb(error);
+  //   return cb(error, false, { message: "Eroare la autentificare" });
+  // } finally {
+  //   console.log("Am ajuns la finally");
   // }
+  return cb(null, profile);
 });
 
 /*
@@ -168,10 +179,16 @@ router.route("/login/password/error").get(function (req, res) {
 });
 
 router.route("/google")
-  .get(passport.authenticate("google"), function (req, res) {
+  .get(passport.authenticate("google", { scope: ["profile", "email"] }), function (req, res) {
     console.log("Un utilizator a fost logat cu succes folosind Google!");
     console.log(req.user);
     res.send(req.user);
+  });
+
+router.route("/google/callback")
+  .get(passport.authenticate("google", { session: true }), function (req, res) {
+    console.log("Un utilizator a fost logat cu succes folosind Google!", req.user);
+    res.redirect(`${process.env.CLIENT_URL}`);
   });
 
 router.route("/register").get(function (req, res) {

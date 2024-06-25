@@ -15,13 +15,14 @@ const path = require("path");
 const bodyParser = require("body-parser");
 const authRouter = require("./routes/auth");
 const indexRouter = require("./routes/index");
-
+const dotenv = require("dotenv");
+dotenv.config();
 /*
 * Declaratii
 */
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 /*
 * Middleware & Setup
@@ -31,12 +32,15 @@ app.use(express.static(path.join(__dirname, "public/images")));
 app.use(express.static(path.join(__dirname, "public/images/profile_pictures")));
 app.use(express.static(path.join(__dirname, "public/images/background_pictures")));
 app.use(morgan("common"));
-app.use(cors());
+app.use(cors({
+  credentials: true,
+  origin: process.env.CLIENT_URL
+}));
 app.use("/", indexRouter);
 app.use("/auth", authRouter);
 // app.use(cors({ origin: "http://localhost:3000" }));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: false }));
 
 /*
  * Pornirea aplicatiei

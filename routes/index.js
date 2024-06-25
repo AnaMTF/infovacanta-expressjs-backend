@@ -137,8 +137,8 @@ router.route("/reviews/:reviewId")
 
       await pool.query("UPDATE reviews SET review_body = $1, review_category = $2, destination_id = $3, date_posted = $4 WHERE review_id = $5", [req.body.review_body, destination_category, destination_id, req.params.date_posted, req.params.reviewId]);
 
-      res.redirect("http://localhost:3000/main"); // HTTP STATUS 201: Created
-
+      // res.redirect("http://localhost:3000/main"); // HTTP STATUS 201: Created
+      res.status(200).json({ message: "Review-ul a fost modificat" });
     } catch (err) {
       res.status(500).json(err);
     }

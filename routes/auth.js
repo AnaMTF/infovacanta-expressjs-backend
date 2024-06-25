@@ -9,16 +9,6 @@ const GoogleStrategy = require("passport-google-oauth2"); // sper sa mearga
 const bcrypt = require("bcrypt");
 const pool = require("../database/postgres.database");
 
-const getUsersCommand = "WITH q2_users AS ( \
-  WITH q_users AS( \
-  SELECT user_id, email, full_name, nickname, profile_picture_id, background_picture_id, user_password FROM users \
-  ) SELECT qu.*, i.location as pfp_location FROM q_users qu \
-  JOIN images i  \
-  ON i.image_id = qu.profile_picture_id \
-  ) SELECT qu2.*, i.location as bg_location FROM q2_users qu2 \
-  JOIN images i \
-  on i.image_id = qu2.background_picture_id ";
-
 /*
 * Middleware & Setup
 */
@@ -90,38 +80,36 @@ const passwordStrategy = new LocalStrategy(async function verify(username, passw
 const googleStragegy = new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: "localhost:3000/main", // <-- DE COMPLETAT
-  userProfileURL: "localhost:3000/profil"
-}, async function (accessToken, refreshToken, profile, cb) {
+  callbackURL: "http://localhost:3000/main", // <-- DE COMPLETAT
+  userProfileURL: "http://localhost:3000/profil"
+}, async function verify(accessToken, refreshToken, profile, cb) {
   console.log("Informatii Debug functie `googleStrategy`");
   console.log("utilizatorul autentificat: ", profile);
 
-  const command = "user_id, email, full_name, nickname, profile_picture_id, background_picture_id FROM users WHERE email = $1";
+  // const { getUserInfoByEmailWithPassword } = require("../utils/sql_commands");
 
-  try {
-    var result = await pool.query(command, [profile.email]);
+  // try {
+  //   var result = await pool.query(getUserInfoByEmailWithPassword, [profile.email]);
 
-    if (result.rows.length > 0) {
-      // Utilizatorul exista
-      return cb(null, result.rows[0]);
-    }
+  //   if (result.rows.length > 0) {
+  //     // Utilizatorul exista deja!
+  //     return cb(null, result.rows[0]);
+  //   }
 
-    // Utilizatorul nu exista
-    // TO DO: POZA DE PROFIL
-    const insert_command_profile_picture = "INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id";
-    const insert_command_user = "INSERT INTO users (email, nickname, full_name, user_password) VALUES ($1, $2, $3, $4) RETURNING user_id";
 
-    var result = await pool.query(insert_command_user, [profile.email, profile.displayName.toLowerCase().replaceAll(" ", "-"), profile.displayName, null]);
-    return cb(null, result.rows[0]);
-  } catch (error) {
-    return cb(error);
-  }
+
+  //   var result = await pool.query(insert_command_user, [profile.email, profile.displayName.toLowerCase().replaceAll(" ", "-"), profile.displayName, null]);
+  //   return cb(null, result.rows[0]);
+  // } catch (error) {
+  //   return cb(error);
+  // }
 });
 
 /*
  * Configurarea strategiilor
  */
 passport.use("local", passwordStrategy);
+passport.use("google", googleStragegy);
 
 /*
  * Rute
@@ -179,8 +167,8 @@ router.route("/login/password/error").get(function (req, res) {
   });
 });
 
-router.route("/login/google")
-  .post(passport.authenticate("google"), function (req, res) {
+router.route("/google")
+  .get(passport.authenticate("google"), function (req, res) {
     console.log("Un utilizator a fost logat cu succes folosind Google!");
     console.log(req.user);
     res.send(req.user);

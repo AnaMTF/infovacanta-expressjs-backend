@@ -139,6 +139,8 @@ WHERE
     u.email = $1`;
 
 const getAllComments = `SELECT
+    c.comment_id,
+    c.review_id,
     u.nickname,
     c.date_posted,
     c.content,
@@ -153,6 +155,8 @@ ORDER BY
     c.date_posted DESC`;
 
 const getCommentsByReviewId = `SELECT
+    c.comment_id,
+    c.review_id,
     u.nickname,
     c.date_posted,
     c.content,

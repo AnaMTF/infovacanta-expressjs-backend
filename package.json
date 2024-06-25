@@ -1,6 +1,6 @@
 {
   "name": "infovacanta-backend-server",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Serverul backend pentru aplicatia de la licenta",
   "main": "server.js",
   "scripts": {

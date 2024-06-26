@@ -77,6 +77,7 @@ router.route("/reviews")
     }
   })
   .post(async function (req, res) {
+    console.log(req.body); // <-- aici sunt datele trimise de client
     // const destinationname = req.body.destinationname;
     // const reviewbody = req.body.reviewbody;
 

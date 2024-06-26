@@ -8,7 +8,8 @@ const getReviewCards = `SELECT
     u.nickname AS author_nickname,
     u.user_id AS author_id,
     r.review_body,
-    r.date_posted
+    r.date_posted,
+    img_review.location AS review_picture_location
 FROM
     reviews r
 LEFT JOIN
@@ -17,6 +18,8 @@ LEFT JOIN
     users u ON r.author_id = u.user_id
 LEFT JOIN
     images img_profile ON u.profile_picture_id = img_profile.image_id
+LEFT JOIN
+    images img_review ON r.review_picture_id = img_review.image_id
 ORDER BY
     r.date_posted DESC`;
 
@@ -28,7 +31,8 @@ const getReviewCardsWhereAuthorId = `SELECT
     u.nickname AS author_nickname,
     u.user_id AS author_id,
     r.review_body,
-    r.date_posted
+    r.date_posted,
+    img_review.location AS review_picture_location
 FROM
     reviews r
 LEFT JOIN
@@ -37,33 +41,33 @@ LEFT JOIN
     users u ON r.author_id = u.user_id
 LEFT JOIN
     images img_profile ON u.profile_picture_id = img_profile.image_id
+LEFT JOIN
+    images img_review ON r.review_picture_id = img_review.image_id
 WHERE
-    author_id = $1
+    r.author_id = $1
 ORDER BY
     r.date_posted DESC`;
 
 const getReviewCardsWhereDestinationId = `SELECT
-    r.review_id,
-    d.destination_id,
-    d.destination_name,
-    d.destination_category,
-    img_profile.location AS author_profile_picture_location,
-    u.nickname AS author_nickname,
-    u.user_id AS author_id,
-    r.review_body,
-    r.date_posted
+    u.nickname,
+    c.date_posted,
+    c.content,
+    img.location AS profile_picture_location,
+    img_review.location AS review_picture_location
 FROM
-    reviews r
+    comments c
 LEFT JOIN
-    destinations d ON r.destination_id = d.destination_id
+    users u ON c.author_id = u.user_id
 LEFT JOIN
-    users u ON r.author_id = u.user_id
+    images img ON u.profile_picture_id = img.image_id
 LEFT JOIN
-    images img_profile ON u.profile_picture_id = img_profile.image_id
+    reviews r ON c.review_id = r.review_id
+LEFT JOIN
+    images img_review ON r.review_picture_id = img_review.image_id
 WHERE
     d.destination_id = $1
 ORDER BY
-    r.date_posted DESC`;
+    c.date_posted DESC`;
 
 const getEditReviewById = `SELECT
     d.destination_name,

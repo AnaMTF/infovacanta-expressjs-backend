@@ -9,7 +9,12 @@ const bcrypt = require("bcrypt");
 
 router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
-router.use(fileUpload());
+router.use(fileUpload({
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50 MB
+    files: 1
+  }
+}));
 
 // router.use(cors({ origin: "http://localhost:3000" }));
 // router.use(bodyParser.json());
@@ -76,6 +81,19 @@ router.route("/reviews")
     // const reviewbody = req.body.reviewbody;
 
     // const authornickname = req.session.passport.user.nickname;
+    var review_picture_id = null;
+    if (req.files?.review_picture) {
+      console.log("Am primit o poza pentru review");
+
+      try {
+        review_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["review", "http://localhost:5000/" + req.files.review_picture.name]);
+        review_picture_id = review_picture_id.rows[0].image_id;
+        req.files.review_picture.mv(__dirname + "\\..\\public\\images\\" + req.files.review_picture.name);
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+
     try {
       var result = await pool.query(
         "SELECT destination_id, destination_category FROM destinations WHERE destination_name = $1",
@@ -90,13 +108,13 @@ router.route("/reviews")
       const destination_category = result.rows[0].destination_category;
 
       var result = await pool.query(
-        "INSERT INTO reviews (author_id, review_category, review_body, date_posted, destination_id) \
-            VALUES ($1, $2, $3, $4, $5) RETURNING *",
-        [req.body.author_id, destination_category, req.body.review_body, req.body.date_posted, destination_id]
+        "INSERT INTO reviews (author_id, review_category, review_body, date_posted, destination_id, review_picture_id) \
+            VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+        [req.body.author_id, destination_category, req.body.review_body, req.body.date_posted, destination_id, review_picture_id]
       );
 
-      res.redirect("http://localhost:3000/main"); // HTTP STATUS 201: Created
-
+      //res.redirect("http://localhost:3000/main"); // HTTP STATUS 201: Created
+      res.status(201); // <-- 27.06.2024 : maybe change back to line above
     } catch (err) {
       res.status(500).json(err);
     }

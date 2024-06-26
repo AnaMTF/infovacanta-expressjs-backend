@@ -6,10 +6,11 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
-const GoogleStrategy = require("passport-google-oauth2"); // sper sa mearga
 const bcrypt = require("bcrypt");
 const pool = require("../database/postgres.database");
 const dotenv = require("dotenv");
+
+const GoogleStrategy = require("passport-google-oauth2").Strategy; // sper sa mearga
 /*
 * Middleware & Setup
 */
@@ -113,6 +114,8 @@ const googleStragegy = new GoogleStrategy({
   // } finally {
   //   console.log("Am ajuns la finally");
   // }
+  console.log("Am ajuns in functia de verificare a autentificarii cu Google");
+  console.log(profile);
   return cb(null, profile);
 });
 
@@ -120,7 +123,8 @@ const googleStragegy = new GoogleStrategy({
  * Configurarea strategiilor
  */
 passport.use("local", passwordStrategy);
-passport.use("google", googleStragegy);
+// passport.use("google", googleStragegy);
+passport.use(googleStragegy);
 
 /*
  * Rute
@@ -160,36 +164,61 @@ router.route("/login/password")
   ), function (req, res) {
     console.log("Un utilizator a fost logat cu succes!");
     console.log(req.user);
-    res.send(req.user);
+    res.status(200).send(req.user);
   });
 // .post(passport.authenticate("local"), function (req, res) {
 //   res.send(req.user);
 // });
 
-router.route("/login/password/success").get(function (req, res) {
-  res.json({
-    message: "Logarea cu email si parola a avut succes",
+router.route("/login/password/success")
+  .get(function (req, res) {
+    res.status(200).json({
+      message: "Logarea cu email si parola a avut succes",
+    });
   });
-});
 
-router.route("/login/password/error").get(function (req, res) {
-  res.json({
-    message: "Logarea cu email si parola a esuat",
+router.route("/login/password/error")
+  .get(function (req, res) {
+    res.status(401).json({
+      message: "Logarea cu email si parola a esuat",
+    });
   });
-});
+
+router.route("/login/google/error")
+  .get(function (req, res) {
+    res.status(401).json({ message: "Logarea cu Google a esuat" });
+  });
+
+router.route("/login/google/success")
+  .get(function (req, res) {
+    if (req.user) {
+      res.status(200).json({
+        message: "Logarea cu Google a avut succes",
+        user: req.user
+      });
+    } else {
+      res.status(401).json({ message: "Logarea cu Google a esuat" });
+    }
+  });
 
 router.route("/google")
-  .get(passport.authenticate("google", { scope: ["profile", "email"] }), function (req, res) {
-    console.log("Un utilizator a fost logat cu succes folosind Google!");
-    console.log(req.user);
-    res.send(req.user);
-  });
+  .get(passport.authenticate("google", { scope: ["profile", "email"] })
+    // function (req, res) {
+    //   console.log("Un utilizator a fost logat cu succes folosind Google!");
+    //   console.log(req.user);
+    //   res.send(req.user);
+    // }
+  );
 
 router.route("/google/callback")
-  .get(passport.authenticate("google", { session: true }), function (req, res) {
-    console.log("Un utilizator a fost logat cu succes folosind Google!", req.user);
-    res.redirect(`${process.env.CLIENT_URL}`);
-  });
+  // .get(passport.authenticate("google", { session: true }), function (req, res) {
+  //   console.log("Un utilizator a fost logat cu succes folosind Google!", req.user);
+  //   res.redirect(`${process.env.CLIENT_URL}`);
+  // });
+  .get(passport.authenticate("google", {
+    successRedirect: `${process.env.CLIENT_URL}/main`,
+    failureRedirect: `${process.env.CLIENT_URL}/login`,
+  }));
 
 router.route("/register").get(function (req, res) {
   res.json({

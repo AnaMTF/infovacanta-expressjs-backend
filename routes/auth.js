@@ -43,7 +43,7 @@ router.use(passport.authenticate("session"));
 // router.use(cors({ origin: "http://localhost:3000" }));
 router.use(fileUpload({
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50 MB
+    fileSize: 50 * 1024 * 1024, // 50 MiB
     files: 1
   }
 }));

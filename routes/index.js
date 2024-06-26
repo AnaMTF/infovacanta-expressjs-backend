@@ -11,7 +11,7 @@ router.use(bodyParser.json());
 router.use(bodyParser.urlencoded({ extended: true }));
 router.use(fileUpload({
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50 MB
+    fileSize: 50 * 1024 * 1024, // 50 MiB
     files: 1
   }
 }));

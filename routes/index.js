@@ -115,7 +115,8 @@ router.route("/reviews")
       );
 
       //res.redirect("http://localhost:3000/main"); // HTTP STATUS 201: Created
-      res.status(201); // <-- 27.06.2024 : maybe change back to line above
+      //res.status(201).json({}); // <-- 27.06.2024 : maybe change back to line above
+      res.status(201).json({ message: "Review created successfully" });
     } catch (err) {
       res.status(500).json(err);
     }

@@ -526,7 +526,7 @@ router.route("/comments-api")
     try {
       await pool.query("INSERT INTO comments (content, author_id, review_id) VALUES ($1, $2, $3)", [req.body.content, req.body.author_id, req.body.review_id]);
       // res.redirect("http://localhost:3000/main"); // HTTP STATUS 201: Created
-      res.status(201);
+      res.status(201).json({ message: "Comentariul a fost adaugat" });
     } catch (error) {
       console.error(error);
       res.status(500).json(error);

@@ -133,6 +133,18 @@ router.route("/reviews/:reviewId")
   .put(async function (req, res) {
     console.log(req.body);
     // res.status(200).json(req.body);
+    if (req.files?.review_picture) {
+      try {
+        review_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["review", "http://localhost:5000/" + req.files.review_picture.name]);
+        review_picture_id = review_picture_id.rows[0].image_id;
+        req.files.review_picture.mv(__dirname + "\\..\\public\\images\\" + req.files.review_picture.name);
+
+        await pool.query("UPDATE reviews SET review_picture_id = $1 WHERE review_id = $2", [review_picture_id, req.params.reviewId])
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+
     const command = "UPDATE reviews SET review_body = $1, rating = $2, review_picture_id = $3 WHERE review_id = $4";
 
     try {
@@ -482,21 +494,10 @@ router.route("/query/:keyword")
 
 router.route("/query/users/:userId/statistics")
   .get(async function (req, res) {
-    const command = "SELECT r.author_id, \
-    COUNT(r.review_id) AS num_reviews, \
-      q.num_comments \
-FROM reviews r \
-    JOIN( \
-      SELECT author_id, COUNT(comment_id) AS num_comments \
-    FROM comments \
-    GROUP BY author_id\
-    ) AS q \
-ON r.author_id = q.author_id \
-WHERE r.author_id = $1 \
-GROUP BY r.author_id, q.num_comments";
+    const { getUserStatisticsById } = require("../utils/sql_commands");
 
     try {
-      const result = await pool.query(command, [req.params.userId]);
+      const result = await pool.query(getUserStatisticsById, [req.params.userId]);
       res.status(200).json(result.rows);
     } catch (error) {
       res.status(500).json(error);

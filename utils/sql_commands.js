@@ -176,6 +176,36 @@ WHERE
 ORDER BY
     c.date_posted DESC;`;
 
+const getUserStatisticsById = `SELECT
+    u.user_id,
+    COALESCE(c.num_comments, 0) AS num_comments,
+    COALESCE(r.num_reviews, 0) AS num_reviews,
+    EXTRACT(YEAR FROM AGE(NOW(), u.date_joined)) AS acc_age
+FROM
+    users u
+LEFT JOIN (
+    SELECT
+        author_id,
+        COUNT(*) AS num_comments
+    FROM
+        comments
+    GROUP BY
+        author_id
+) c ON u.user_id = c.author_id
+LEFT JOIN (
+    SELECT
+        author_id,
+        COUNT(*) AS num_reviews
+    FROM
+        reviews
+    GROUP BY
+        author_id
+) r ON u.user_id = r.author_id
+WHERE
+    u.user_id = $1
+ORDER BY
+    u.user_id`;
+
 module.exports = {
     getReviewCards,
     getReviewCardsWhereAuthorId,
@@ -187,4 +217,5 @@ module.exports = {
     getUserInfoByEmailWithPassword,
     getAllComments,
     getCommentsByReviewId,
+    getUserStatisticsById,
 }

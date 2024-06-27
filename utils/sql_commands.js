@@ -49,25 +49,29 @@ ORDER BY
     r.date_posted DESC`;
 
 const getReviewCardsWhereDestinationId = `SELECT
-    u.nickname,
-    c.date_posted,
-    c.content,
-    img.location AS profile_picture_location,
+    r.review_id,
+    d.destination_name,
+    d.destination_category,
+    img_profile.location AS author_profile_picture_location,
+    u.nickname AS author_nickname,
+    u.user_id AS author_id,
+    r.review_body,
+    r.date_posted,
     img_review.location AS review_picture_location
 FROM
-    comments c
+    reviews r
 LEFT JOIN
-    users u ON c.author_id = u.user_id
+    destinations d ON r.destination_id = d.destination_id
 LEFT JOIN
-    images img ON u.profile_picture_id = img.image_id
+    users u ON r.author_id = u.user_id
 LEFT JOIN
-    reviews r ON c.review_id = r.review_id
+    images img_profile ON u.profile_picture_id = img_profile.image_id
 LEFT JOIN
     images img_review ON r.review_picture_id = img_review.image_id
 WHERE
     d.destination_id = $1
 ORDER BY
-    c.date_posted DESC`;
+    r.date_posted DESC`; // ba asta
 
 const getEditReviewById = `SELECT
     d.destination_name,

@@ -212,10 +212,14 @@ router.route("/google/callback")
   //   console.log("Un utilizator a fost logat cu succes folosind Google!", req.user);
   //   res.redirect(`${process.env.CLIENT_URL}`);
   // });
-  .get(passport.authenticate("google", {
-    successRedirect: `${process.env.CLIENT_URL}/main`,
-    failureRedirect: `${process.env.CLIENT_URL}/login`,
-  }));
+  // .get(passport.authenticate("google", {
+  //   successRedirect: `${process.env.CLIENT_URL}/main`,
+  //   failureRedirect: `${process.env.CLIENT_URL}/login`,
+  // }));
+  .get(passport.authenticate('google', { failureRedirect: '/login/google/error' }), function (req, res) {
+    console.log("Un utilizator a fost logat cu succes folosind Google!", req.user);
+    res.redirect(`${process.env.CLIENT_URL}/auth-callback/?user=${encodeURIComponent(JSON.stringify(req.user))}`);
+  });
 
 router.route("/register").get(function (req, res) {
   res.json({

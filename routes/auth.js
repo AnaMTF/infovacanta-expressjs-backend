@@ -102,11 +102,15 @@ const googleStragegy = new GoogleStrategy({
     if (result.rows.length === 0) {
       var profile_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["profile", userData.picture]);
       profile_picture_id = profile_picture_id.rows[0].image_id;
-      result = await pool.query("INSERT INTO users (email, nickname, full_name, profile_picture_id) VALUES ($1, $2, $3, $4) RETURNING *", [userData.email, , userData.name.replaceAll(" ", "-").toLowerCase(), profile_picture_id]);
+      await pool.query("INSERT INTO users (email, nickname, full_name, profile_picture_id) VALUES ($1, $2, $3, $4)", [userData.email, , userData.name.replaceAll(" ", "-").toLowerCase(), profile_picture_id]);
+
+      result = await pool.query(getUserInfoByEmail, [userData.email]);
     }
 
+    const saved_reviews_result = await pool.query(getReviewIdsSavedByUser, [result.rows[0]?.user_id]);
+    const user = { ...result.rows[0], saved_reviews: saved_reviews_result.rows.map(review => review.review_id) };
 
-
+    return cb(null, user);
   } catch (error) {
     return cb(error, null, error.message);
   }

@@ -1,8 +1,6 @@
 const express = require("express");
 const fileUpload = require('express-fileupload');
 
-
-
 // const path = require("path");
 const pool = require("../database/postgres.database");
 const bodyParser = require("body-parser");

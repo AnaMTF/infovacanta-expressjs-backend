@@ -10,6 +10,8 @@
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
+const https = require("https");
+const fs = require("fs");
 
 const path = require("path");
 const bodyParser = require("body-parser");
@@ -45,6 +47,13 @@ app.use(bodyParser.urlencoded({ extended: false }));
 /*
  * Pornirea aplicatiei
  */
-app.listen(port, function () {
+const options = {
+  key: fs.readFileSync(path.join(__dirname, "certs", "localhost-key.pem")),
+  cert: fs.readFileSync(path.join(__dirname, "certs", "localhost.pem"))
+};
+
+const server = https.createServer(options, app);
+
+server.listen(port, function () {
   console.log(`Server is running on port ${port}`);
 });

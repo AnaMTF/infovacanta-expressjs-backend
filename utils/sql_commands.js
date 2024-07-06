@@ -125,6 +125,22 @@ LEFT JOIN
 WHERE
     u.user_id = $1`;
 
+const getUserInfoByEmail = `SELECT
+    u.user_id,
+    u.email,
+    u.full_name,
+    u.nickname,
+    img_profile.location AS profile_picture_location,
+    img_background.location AS background_picture_location
+FROM
+    users u
+LEFT JOIN
+    images img_profile ON u.profile_picture_id = img_profile.image_id
+LEFT JOIN
+    images img_background ON u.background_picture_id = img_background.image_id
+WHERE
+    u.email = $1`;
+
 const getReviewIdsSavedByUser = `SELECT
     review_id
 FROM
@@ -214,15 +230,16 @@ ORDER BY
     u.user_id`;
 
 module.exports = {
+    getAllComments,
+    getCommentsByReviewId,
+    getEditReviewById,
     getReviewCards,
     getReviewCardsWhereAuthorId,
     getReviewCardsWhereDestinationId,
-    getEditReviewById,
-    queryReviewCardsByKeyword,
-    getUserInfoById,
     getReviewIdsSavedByUser,
+    getUserInfoByEmail,
     getUserInfoByEmailWithPassword,
-    getAllComments,
-    getCommentsByReviewId,
+    getUserInfoById,
     getUserStatisticsById,
+    queryReviewCardsByKeyword,
 }

@@ -93,30 +93,23 @@ const googleStragegy = new GoogleStrategy({
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   callbackURL: process.env.CLIENT_CALLBACK_URL,
 }, async (accessToken, refreshToken, profile, cb) => {
-  // const { getUserInfoByEmailWithPassword } = require("../utils/sql_commands");
+  const userData = profile._json;
+  const { getUserInfoByEmail } = require("../utils/sql_commands");
 
-  // try {
-  //   var result = await pool.query(getUserInfoByEmailWithPassword, [profile.email]);
+  try {
+    var result = await pool.query(getUserInfoByEmail, [userData.email]);
 
-  //   if (result.rows.length > 0) {
-  //     // Utilizatorul exista deja!
-  //     return cb(null, result.rows[0]);
-  //   }
+    if (result.rows.length === 0) {
+      var profile_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["profile", userData.picture]);
+      profile_picture_id = profile_picture_id.rows[0].image_id;
+      result = await pool.query("INSERT INTO users (email, nickname, full_name, profile_picture_id) VALUES ($1, $2, $3, $4) RETURNING *", [userData.email, , userData.name.replaceAll(" ", "-").toLowerCase(), profile_picture_id]);
+    }
 
-  //   var result = await pool.query(
-  //     "INSERT INTO users (email, full_name, nickname, profile_picture_id, background_picture_id) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-  //     [profile.email, profile.displayName, profile.displayName.toLowerCase().replaceAll(" ", "-"), 56, 57]
-  //   );
 
-  //   return cb(null, result.rows[0]);
-  // } catch (error) {
-  //   return cb(error, false, { message: "Eroare la autentificare" });
-  // } finally {
-  //   console.log("Am ajuns la finally");
-  // }
-  console.log("Am ajuns in functia de verificare a autentificarii cu Google");
-  console.log(profile);
-  return cb(null, profile);
+
+  } catch (error) {
+    return cb(error, null, error.message);
+  }
 });
 
 /*

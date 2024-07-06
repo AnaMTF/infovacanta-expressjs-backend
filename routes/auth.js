@@ -92,7 +92,7 @@ const googleStragegy = new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   callbackURL: process.env.CLIENT_CALLBACK_URL,
-}, async function verify(accessToken, refreshToken, profile, cb) {
+}, async (accessToken, refreshToken, profile, cb) => {
   // const { getUserInfoByEmailWithPassword } = require("../utils/sql_commands");
 
   // try {

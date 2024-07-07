@@ -11,6 +11,7 @@ const pool = require("../database/postgres.database");
 const dotenv = require("dotenv");
 
 const GoogleStrategy = require("passport-google-oauth2").Strategy; // sper sa mearga
+const { Strategy: FacebookStrategy } = require("passport-facebook");
 /*
 * Middleware & Setup
 */
@@ -116,12 +117,42 @@ const googleStragegy = new GoogleStrategy({
   }
 });
 
+const facebookStrategy = new FacebookStrategy({
+  clientID: process.env.FACEBOOK_APP_ID,
+  clientSecret: process.env.FACEBOOK_APP_SECRET,
+  callbackURL: process.env.FACEBOOK_CALLBACK_URL,
+  profileFields: ["id", "displayName", "emails", "photos"],
+}, async (accessToken, refreshToken, profile, cb) => {
+  const userData = profile._json;
+  const { getUserInfoByEmail, getReviewIdsSavedByUser } = require("../utils/sql_commands");
+
+  try {
+    var result = await pool.query(getUserInfoByEmail, [userData.email]);
+
+    if (result.rows.length === 0) {
+      var profile_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["profile", userData.picture.data.url]);
+      profile_picture_id = profile_picture_id.rows[0].image_id;
+      await pool.query("INSERT INTO users (email, nickname, full_name, profile_picture_id) VALUES ($1, $2, $3, $4)", [userData.email, userData.name.replaceAll(" ", "-").toLowerCase(), userData.name, profile_picture_id]);
+
+      result = await pool.query(getUserInfoByEmail, [userData.email]);
+    }
+
+    const saved_reviews_result = await pool.query(getReviewIdsSavedByUser, [result.rows[0]?.user_id]);
+    const user = { ...result.rows[0], saved_reviews: saved_reviews_result.rows.map(review => review.review_id) };
+
+    return cb(null, user);
+  } catch (error) {
+    return cb(error, null, error.message);
+  }
+});
+
 /*
  * Configurarea strategiilor
  */
 passport.use("local", passwordStrategy);
 // passport.use("google", googleStragegy);
 passport.use(googleStragegy);
+passport.use(facebookStrategy);
 
 /*
  * Rute
@@ -196,6 +227,17 @@ router.route("/login/google/success")
     } else {
       res.status(401).json({ message: "Logarea cu Google a esuat" });
     }
+  });
+
+router.route("/facebook")
+  .get(passport.authenticate("facebook", { scope: ["public_profile", "email"] }));
+
+router.route("/facebook/callback")
+  .get(passport.authenticate("facebook", { failureRedirect: "/facebook/error", session: true }), function (req, res) {
+    console.log("Un utilizator a fost logat cu succes folosind Facebook!", req.user);
+    const redirect_url = `${process.env.CLIENT_URL}/auth/callback?user=${encodeURIComponent(JSON.stringify(req.user))}`;
+    console.log("Redirecting to:", redirect_url);
+    res.redirect(redirect_url);
   });
 
 router.route("/google")

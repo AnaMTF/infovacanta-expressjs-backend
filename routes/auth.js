@@ -375,6 +375,25 @@ router.route("/profile/:user_id");
 //   cb(null, user);
 // });
 
+router.route("/refresh")
+  .post(async function (req, res) {
+    try {
+      const { getUserInfoById, getReviewIdsSavedByUser } = require("../utils/sql_commands");
+      const userData = await pool.query(getUserInfoById, [req.body.id]);
+      const saved_reviews_result = await pool.query(getReviewIdsSavedByUser, [req.body.id]);
+
+      const user = {
+        ...userData.rows[0],
+        saved_reviews: saved_reviews_result.rows.map(review => review.review_id)
+      }
+
+      res.status(200).json(user);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+      console.log(error.message);
+    }
+  });
+
 passport.serializeUser((user, cb) => {
   cb(null, user.user_id); // Store user_id in the session
 });

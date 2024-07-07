@@ -94,7 +94,7 @@ const googleStragegy = new GoogleStrategy({
   callbackURL: process.env.CLIENT_CALLBACK_URL,
 }, async (accessToken, refreshToken, profile, cb) => {
   const userData = profile._json;
-  const { getUserInfoByEmail } = require("../utils/sql_commands");
+  const { getUserInfoByEmail, getReviewIdsSavedByUser } = require("../utils/sql_commands");
 
   try {
     var result = await pool.query(getUserInfoByEmail, [userData.email]);
@@ -102,7 +102,7 @@ const googleStragegy = new GoogleStrategy({
     if (result.rows.length === 0) {
       var profile_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["profile", userData.picture]);
       profile_picture_id = profile_picture_id.rows[0].image_id;
-      await pool.query("INSERT INTO users (email, nickname, full_name, profile_picture_id) VALUES ($1, $2, $3, $4)", [userData.email, , userData.name.replaceAll(" ", "-").toLowerCase(), profile_picture_id]);
+      await pool.query("INSERT INTO users (email, nickname, full_name, profile_picture_id) VALUES ($1, $2, $3, $4)", [userData.email, userData.name.replaceAll(" ", "-").toLowerCase(), userData.name, profile_picture_id]);
 
       result = await pool.query(getUserInfoByEmail, [userData.email]);
     }
@@ -216,9 +216,11 @@ router.route("/google/callback")
   //   successRedirect: `${process.env.CLIENT_URL}/main`,
   //   failureRedirect: `${process.env.CLIENT_URL}/login`,
   // }));
-  .get(passport.authenticate('google', { failureRedirect: '/login/google/error' }), function (req, res) {
+  .get(passport.authenticate('google', { failureRedirect: '/google/error', session: true }), function (req, res) {
     console.log("Un utilizator a fost logat cu succes folosind Google!", req.user);
-    res.redirect(`${process.env.CLIENT_URL}/auth-callback/?user=${encodeURIComponent(JSON.stringify(req.user))}`);
+    const redirect_url = `${process.env.CLIENT_URL}/auth/callback?user=${encodeURIComponent(JSON.stringify(req.user))}`;
+    console.log("Redirecting to:", redirect_url);
+    res.redirect(redirect_url);
   });
 
 router.route("/register").get(function (req, res) {
@@ -253,7 +255,7 @@ router.route("/register/password")
       console.log("Am primit o poza de profil");
 
       try {
-        profile_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["profile", "http://localhost:5000/" + req.files.profile_picture.name]);
+        profile_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["profile", "https://localhost:5000/" + req.files.profile_picture.name]);
         profile_picture_id = profile_picture_id.rows[0].image_id;
         req.files.profile_picture.mv(__dirname + "\\..\\public\\images\\profile_pictures\\" + req.files.profile_picture.name);
       } catch (error) {
@@ -342,7 +344,7 @@ passport.deserializeUser(async (id, cb) => {
     const user_result = await pool.query(getUserInfoById, [id]);
     const saved_reviews_result = await pool.query(getReviewIdsSavedByUser, [id]);
 
-    if (result.rows.length === 0) {
+    if (user_result.rows.length === 0) {
       return cb(new Error('User not found'));
     }
 

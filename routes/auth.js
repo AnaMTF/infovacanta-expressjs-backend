@@ -273,9 +273,9 @@ router.route("/register").get(function (req, res) {
 
 router.route("/register/password")
   .post(async function (req, res) {
-    console.log({ body: { ...req.body }, files: { ...req.files }, param: req.params.param });
-    res.status(200).send("OK!");
-    return;
+    // console.log({ body: { ...req.body }, files: { ...req.files }, param: req.params.param });
+    // res.status(200).send("OK!");
+    // return;
 
     const email = req.body.email;
     const nickname = req.body.nickname;

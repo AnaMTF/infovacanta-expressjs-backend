@@ -12,7 +12,7 @@ router.use(bodyParser.urlencoded({ extended: true }));
 router.use(fileUpload({
   limits: {
     fileSize: 50 * 1024 * 1024, // 50 MiB
-    files: 1
+    files: 2
   }
 }));
 

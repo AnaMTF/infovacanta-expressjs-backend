@@ -181,6 +181,24 @@ LEFT JOIN
 ORDER BY
     c.date_posted DESC`;
 
+getCommentsByContent = `SELECT
+    c.comment_id,
+    c.review_id,
+    u.nickname,
+    c.date_posted,
+    c.content,
+    img.location AS profile_picture_location
+FROM
+    comments c
+LEFT JOIN
+    users u ON c.author_id = u.user_id
+LEFT JOIN
+    images img ON u.profile_picture_id = img.image_id
+WHERE
+	lower(c.content) like '%'||lower($1)||'%'
+ORDER BY
+    c.date_posted DESC`;
+
 const getCommentsByReviewId = `SELECT
     c.comment_id,
     c.review_id,
@@ -230,16 +248,17 @@ ORDER BY
     u.user_id`;
 
 module.exports = {
-    getAllComments,
-    getCommentsByReviewId,
-    getEditReviewById,
-    getReviewCards,
-    getReviewCardsWhereAuthorId,
-    getReviewCardsWhereDestinationId,
-    getReviewIdsSavedByUser,
-    getUserInfoByEmail,
-    getUserInfoByEmailWithPassword,
-    getUserInfoById,
-    getUserStatisticsById,
     queryReviewCardsByKeyword,
+    getUserStatisticsById,
+    getUserInfoById,
+    getUserInfoByEmailWithPassword,
+    getUserInfoByEmail,
+    getReviewIdsSavedByUser,
+    getReviewCardsWhereDestinationId,
+    getReviewCardsWhereAuthorId,
+    getReviewCards,
+    getEditReviewById,
+    getCommentsByReviewId,
+    getCommentsByContent,
+    getAllComments,
 }

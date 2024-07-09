@@ -424,7 +424,8 @@ router.route("/query/:keyword")
     const { queryReviewCardsByKeyword } = require("../utils/sql_commands");
     const command_destinations = getDestinationsCommand + " WHERE LOWER(destination_name) LIKE '%' || LOWER($1) || '%' OR LOWER(description) LIKE '%' || LOWER($1) || '%' OR destination_category::TEXT LIKE '%' || LOWER($1) || '%'";
     const command_users = getUsersCommand + " WHERE LOWER(full_name) LIKE '%' || LOWER($1) || '%' OR LOWER(nickname) LIKE '%' || LOWER($1) || '%'";
-    const command_comments = "SELECT * FROM comments JOIN (SELECT user_id, nickname FROM users) as users_info ON comments.author_id = users_info.user_id WHERE LOWER(content) LIKE '%' || LOWER($1) || '%'";
+    //const command_comments = "SELECT * FROM comments JOIN (SELECT user_id, nickname FROM users) as users_info ON comments.author_id = users_info.user_id WHERE LOWER(content) LIKE '%' || LOWER($1) || '%'";
+    const { getCommentsByContent: command_comments } = require("../utils/sql_commands");
 
     try {
       const result_reviews = await pool.query(queryReviewCardsByKeyword, [req.params.keyword]);

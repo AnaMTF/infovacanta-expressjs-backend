@@ -333,11 +333,12 @@ router.route("/logout")
   //   .get(function (req, res) {
   //     res.json({ mesaj: "Aceasta este pagina de logout" });
   //   })
-  .get(function (req, res, next) { // <-- NU ESTE BEST PRACTICE !!!
+  .post(function (req, res, next) { // <-- NU ESTE BEST PRACTICE !!!
     req.logout(function (err) {
       if (err) return next(err);
       console.log("Un utilizator a fost delogat cu succes!")
-      res.redirect("http://localhost:3000/");
+      // res.redirect("http://localhost:3000/");
+      res.status(200).json({ message: "Delogarea a avut succes" });
     });
   });
 

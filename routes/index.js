@@ -77,11 +77,8 @@ router.route("/reviews")
     }
   })
   .post(async function (req, res) {
-    console.log(req.body); // <-- aici sunt datele trimise de client
-    // const destinationname = req.body.destinationname;
-    // const reviewbody = req.body.reviewbody;
+    // console.log({ body: { ...req.body }, files: { ...req.files } });
 
-    // const authornickname = req.session.passport.user.nickname;
     var review_picture_id = null;
     if (req.files?.review_picture) {
       console.log("Am primit o poza pentru review");
@@ -145,8 +142,6 @@ router.route("/reviews/:reviewId")
         console.log(error.message);
       }
     }
-
-    const command = "UPDATE reviews SET review_body = $1, rating = $2, review_picture_id = $3 WHERE review_id = $4";
 
     try {
       var result = await pool.query(

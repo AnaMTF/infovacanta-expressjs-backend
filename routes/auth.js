@@ -272,15 +272,10 @@ router.route("/register").get(function (req, res) {
 });
 
 router.route("/register/password")
-  .get(function (req, res) {
-    res.json({
-      message: "Aceasta este pagina de inregistrare cu parola",
-    })
-  })
-  // .post(async function (req, res) {
-  //   res.json({ mesaj: "Receptionat!" , request: req.body });
-  // });
   .post(async function (req, res) {
+    console.log({ body: { ...req.body }, files: { ...req.files }, param: req.params.param });
+    res.status(200).send("OK!");
+
     const email = req.body.email;
     const nickname = req.body.nickname;
     const full_name = req.body.full_name;
@@ -321,8 +316,8 @@ router.route("/register/password")
           const result = await pool.query("INSERT INTO users (email, nickname, full_name, user_password, profile_picture_id) VALUES ($1, $2, $3, $4, $5) RETURNING user_id", [email, nickname, full_name, hash, profile_picture_id]);
           const user_id = result.rows[0].user_id;
 
-          return res.redirect("http://localhost:3000/login");
-          // return res.status(201).json({ message: "Utilizatorul a fost creat" });
+          // return res.redirect("http://localhost:3000/login");
+          return res.status(201).json({ message: "Utilizatorul a fost creat" });
         } catch (error) {
           return res.status(500).json({ message: error.message });
         }

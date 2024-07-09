@@ -18,6 +18,7 @@ const path = require("path");
 const bodyParser = require("body-parser");
 const authRouter = require("./routes/auth");
 const indexRouter = require("./routes/index");
+const testRouter = require("./routes/echo");
 const dotenv = require("dotenv");
 dotenv.config();
 /*
@@ -30,7 +31,13 @@ const port = process.env.PORT || 5000;
 /*
 * Middleware & Setup
 */
-app.use(session({ secret: process.env.SESSION_SECRET }));
+app.use(session({
+  secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: true, cookie: {
+    secure: false, //<-- Setarea true necesita HTTPS
+    sameSite: "lax", //<-- Setarea "strict" necesita HTTPS
+    maxAge: 1000 * 60 * 60 * 24 * 30, //<-- 30 de zile
+  }
+}));
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "public/images")));
@@ -43,6 +50,7 @@ app.use(cors({
 }));
 app.use("/", indexRouter);
 app.use("/auth", authRouter);
+app.use('/test', testRouter);
 // app.use(cors({ origin: "http://localhost:3000" }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

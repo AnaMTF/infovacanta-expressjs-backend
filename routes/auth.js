@@ -42,12 +42,12 @@ router.use(passport.initialize());
 router.use(passport.session());
 router.use(passport.authenticate("session"));
 // router.use(cors({ origin: "http://localhost:3000" }));
-router.use(fileUpload({
-  limits: {
-    fileSize: 50 * 1024 * 1024, // 50 MiB
-    files: 1
-  }
-}));
+// router.use(fileUpload({
+//   limits: {
+//     fileSize: 50 * 1024 * 1024, // 50 MiB
+//     files: 1
+//   }
+// }));
 /*
  * Implementarea strategiilor
  */
@@ -275,6 +275,7 @@ router.route("/register/password")
   .post(async function (req, res) {
     console.log({ body: { ...req.body }, files: { ...req.files }, param: req.params.param });
     res.status(200).send("OK!");
+    return;
 
     const email = req.body.email;
     const nickname = req.body.nickname;

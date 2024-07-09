@@ -375,11 +375,9 @@ router.route("/profile/:user_id");
 //   cb(null, user);
 // });
 
-router.route("/refresh")
+router.route("/refresh/:userId")
   .post(async function (req, res) {
     console.log(req.body);
-
-    const id = req.user_id;
 
     var profile_picture_id = null;
     var background_picture_id = null;
@@ -420,8 +418,10 @@ router.route("/refresh")
 
       /* CONSTRUCT NEW USER */
       const { getUserInfoById, getReviewIdsSavedByUser } = require("../utils/sql_commands");
-      const user_result = await pool.query(getUserInfoById, [id]);
-      const saved_reviews_result = await pool.query(getReviewIdsSavedByUser, [id]);
+
+      const user_result = await pool.query(getUserInfoById, [req.params.userId]);
+      const saved_reviews_result = await pool.query(getReviewIdsSavedByUser, [req.params.userId]);
+
       const user = {
         ...user_result.rows[0],
         saved_reviews: saved_reviews_result.rows.map(review => review.review_id)

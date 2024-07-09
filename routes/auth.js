@@ -377,19 +377,48 @@ router.route("/profile/:user_id");
 
 router.route("/refresh")
   .post(async function (req, res) {
-    try {
-      const { getUserInfoById, getReviewIdsSavedByUser } = require("../utils/sql_commands");
-      const userData = await pool.query(getUserInfoById, [req.body.id]);
-      const saved_reviews_result = await pool.query(getReviewIdsSavedByUser, [req.body.id]);
+    console.log(req.body);
 
-      const user = {
-        ...userData.rows[0],
-        saved_reviews: saved_reviews_result.rows.map(review => review.review_id)
+    var profile_picture_id = null;
+    var background_picture_id = null;
+
+    if (req.files?.profile_picture) {
+      console.log("Am primit o poza de profil");
+      try {
+        profile_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["profile", "http://localhost:5000/" + req.files.profile_picture.name]);
+        profile_picture_id = profile_picture_id.rows[0].image_id;
+        req.files.profile_picture.mv(__dirname + "\\..\\public\\images\\profile_pictures\\" + req.files.profile_picture.name);
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+
+    if (req.files?.background_picture) {
+      console.log("Am primit o poza de fundal");
+      try {
+        background_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["background", "http://localhost:5000/" + req.files.background_picture.name]);
+        background_picture_id = background_picture_id.rows[0].image_id;
+        req.files.background_picture.mv(__dirname + "\\..\\public\\images\\background_pictures\\" + req.files.background_picture.name);
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+
+    try {
+      if (profile_picture_id) {
+        await pool.query("UPDATE users SET profile_picture_id = $1 WHERE user_id = $2", [profile_picture_id, req.params.userId]);
       }
 
-      res.status(200).json(user);
+      if (background_picture_id) {
+        await pool.query("UPDATE users SET background_picture_id = $1 WHERE user_id = $2", [background_picture_id, req.params.userId]);
+      }
+
+      await pool.query("UPDATE users SET email = $1, full_name = $2, nickname = $3 WHERE user_id = $4", [req.body.email, req.body.full_name, req.body.nickname, req.params.userId]);
+      // res.redirect("http://localhost:3000/profil");
+
+      /* CONSTRUCT NEW USER */
+
     } catch (error) {
-      res.status(500).json({ message: error.message });
       console.log(error.message);
     }
   });

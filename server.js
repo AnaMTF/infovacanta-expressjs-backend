@@ -12,6 +12,7 @@ const morgan = require("morgan");
 const cors = require("cors");
 const https = require("https");
 const fs = require("fs");
+const session = require("express-session");
 
 const path = require("path");
 const bodyParser = require("body-parser");
@@ -29,6 +30,8 @@ const port = process.env.PORT || 5000;
 /*
 * Middleware & Setup
 */
+app.use(session({ secret: process.env.SESSION_SECRET }));
+
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "public/images")));
 app.use(express.static(path.join(__dirname, "public/images/profile_pictures")));

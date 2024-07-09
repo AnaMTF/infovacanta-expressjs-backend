@@ -84,7 +84,7 @@ router.route("/reviews")
       console.log("Am primit o poza pentru review");
 
       try {
-        review_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["review", "http://localhost:5000/" + req.files.review_picture.name]);
+        review_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["review", "https://localhost:5000/" + req.files.review_picture.name]);
         review_picture_id = review_picture_id.rows[0].image_id;
         req.files.review_picture.mv(__dirname + "\\..\\public\\images\\" + req.files.review_picture.name);
       } catch (error) {
@@ -133,7 +133,7 @@ router.route("/reviews/:reviewId")
     // res.status(200).json(req.body);
     if (req.files?.review_picture) {
       try {
-        review_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["review", "http://localhost:5000/" + req.files.review_picture.name]);
+        review_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["review", "https://localhost:5000/" + req.files.review_picture.name]);
         review_picture_id = review_picture_id.rows[0].image_id;
         req.files.review_picture.mv(__dirname + "\\..\\public\\images\\" + req.files.review_picture.name);
 

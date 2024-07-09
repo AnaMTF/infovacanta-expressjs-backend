@@ -372,7 +372,7 @@ router.route("/profile/:user_id");
 
 router.route("/refresh/:userId")
   .post(async function (req, res) {
-    console.log(req.body);
+    console.log({ body: { ...req.body }, files: { ...req.files }, param: req.params.param });
 
     var profile_picture_id = null;
     var background_picture_id = null;
@@ -380,7 +380,7 @@ router.route("/refresh/:userId")
     if (req.files?.profile_picture) {
       console.log("Am primit o poza de profil");
       try {
-        profile_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["profile", "http://localhost:5000/" + req.files.profile_picture.name]);
+        profile_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["profile", "https://localhost:5000/" + req.files.profile_picture.name]);
         profile_picture_id = profile_picture_id.rows[0].image_id;
         req.files.profile_picture.mv(__dirname + "\\..\\public\\images\\profile_pictures\\" + req.files.profile_picture.name);
       } catch (error) {
@@ -391,7 +391,7 @@ router.route("/refresh/:userId")
     if (req.files?.background_picture) {
       console.log("Am primit o poza de fundal");
       try {
-        background_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["background", "http://localhost:5000/" + req.files.background_picture.name]);
+        background_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["background", "https://localhost:5000/" + req.files.background_picture.name]);
         background_picture_id = background_picture_id.rows[0].image_id;
         req.files.background_picture.mv(__dirname + "\\..\\public\\images\\background_pictures\\" + req.files.background_picture.name);
       } catch (error) {

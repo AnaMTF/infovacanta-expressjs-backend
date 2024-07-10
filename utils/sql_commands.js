@@ -9,7 +9,9 @@ const getReviewCards = `SELECT
     u.user_id AS author_id,
     r.review_body,
     r.date_posted,
-    img_review.location AS review_picture_location
+    img_review.location AS review_picture_location,
+	d.coordinates[0] as lat,
+	d.coordinates[1] as lon
 FROM
     reviews r
 LEFT JOIN
@@ -32,7 +34,9 @@ const getReviewCardsWhereAuthorId = `SELECT
     u.user_id AS author_id,
     r.review_body,
     r.date_posted,
-    img_review.location AS review_picture_location
+    img_review.location AS review_picture_location,
+	d.coordinates[0] as lat,
+	d.coordinates[1] as lon
 FROM
     reviews r
 LEFT JOIN
@@ -57,7 +61,9 @@ const getReviewCardsWhereDestinationId = `SELECT
     u.user_id AS author_id,
     r.review_body,
     r.date_posted,
-    img_review.location AS review_picture_location
+    img_review.location AS review_picture_location,
+	d.coordinates[0] as lat,
+	d.coordinates[1] as lon
 FROM
     reviews r
 LEFT JOIN
@@ -92,7 +98,9 @@ const queryReviewCardsByKeyword = `SELECT
     u.user_id AS author_id,
     r.review_body,
     r.date_posted,
-    img_review.location AS review_picture_location
+    img_review.location AS review_picture_location,
+	d.coordinates[0] as lat,
+	d.coordinates[1] as lon
 FROM
     reviews r
 LEFT JOIN

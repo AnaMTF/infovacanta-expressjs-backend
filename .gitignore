@@ -21,3 +21,6 @@ yarn.lock
 
 # Certificates
 *.pem
+
+# Testing
+tests/

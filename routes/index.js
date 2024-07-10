@@ -33,7 +33,8 @@ const getDestinationsCommand = "WITH processed_destinations AS ( \
         destination_id, \
         destination_name, \
         destination_category, \
-        coordinates, \
+        coordinates[0] as lat, \
+        coordinates[1] as lon, \
         destination_picture_id, \
         description, \
         replace(lower(unaccent(destination_name)), ' ', '-') as destination_link \
@@ -44,7 +45,8 @@ SELECT \
     pd.destination_id, \
     pd.destination_name, \
     pd.destination_category, \
-    pd.coordinates, \
+    pd.lat, \
+    pd.lon, \
     pd.destination_picture_id, \
     pd.description, \
     pd.destination_link, \
@@ -421,6 +423,8 @@ router.route("/query/destinations/:destinationLink")
 
 router.route("/query/:keyword")
   .get(async function (req, res) {
+    // TO DO:
+    // UNACCENT() function
     const { queryReviewCardsByKeyword } = require("../utils/sql_commands");
     const command_destinations = getDestinationsCommand + " WHERE LOWER(destination_name) LIKE '%' || LOWER($1) || '%' OR LOWER(description) LIKE '%' || LOWER($1) || '%' OR destination_category::TEXT LIKE '%' || LOWER($1) || '%'";
     const command_users = getUsersCommand + " WHERE LOWER(full_name) LIKE '%' || LOWER($1) || '%' OR LOWER(nickname) LIKE '%' || LOWER($1) || '%'";

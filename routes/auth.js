@@ -103,7 +103,7 @@ const googleStragegy = new GoogleStrategy({
     if (result.rows.length === 0) {
       var profile_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["profile", userData.picture]);
       profile_picture_id = profile_picture_id.rows[0].image_id;
-      await pool.query("INSERT INTO users (email, nickname, full_name, profile_picture_id) VALUES ($1, $2, $3, $4)", [userData.email, userData.name.replaceAll(" ", "-").toLowerCase(), userData.name, profile_picture_id]);
+      await pool.query("INSERT INTO users (email, nickname, full_name, profile_picture_id) VALUES ($1, $2, $3, $4)", [userData.email, userData.name.replaceAll(" ", "-").toLowerCase() + Math.floor(1000 + Math.random() * 9000).toString(), userData.name, profile_picture_id]);
 
       result = await pool.query(getUserInfoByEmail, [userData.email]);
     }
@@ -132,7 +132,7 @@ const facebookStrategy = new FacebookStrategy({
     if (result.rows.length === 0) {
       var profile_picture_id = await pool.query("INSERT INTO images (image_category, location) VALUES ($1, $2) RETURNING image_id", ["profile", userData.picture.data.url]);
       profile_picture_id = profile_picture_id.rows[0].image_id;
-      await pool.query("INSERT INTO users (email, nickname, full_name, profile_picture_id) VALUES ($1, $2, $3, $4)", [userData.email, userData.name.replaceAll(" ", "-").toLowerCase(), userData.name, profile_picture_id]);
+      await pool.query("INSERT INTO users (email, nickname, full_name, profile_picture_id) VALUES ($1, $2, $3, $4)", [userData.email, userData.name.replaceAll(" ", "-").toLowerCase() + Math.floor(1000 + Math.random() * 9000).toString(), userData.name, profile_picture_id]);
 
       result = await pool.query(getUserInfoByEmail, [userData.email]);
     }

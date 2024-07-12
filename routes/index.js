@@ -8,7 +8,7 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 
 router.use(bodyParser.json());
-router.use(bodyParser.urlencoded({ extended: true }));
+router.use(bodyParser.urlencoded({ extended: false }));
 router.use(fileUpload({
   limits: {
     fileSize: 50 * 1024 * 1024, // 50 MiB
@@ -221,6 +221,9 @@ router.route("/reviews/:reviewId/comments")
 router.route("/review-cards")
   .get(async function (req, res) {
     const { getReviewCards } = require("../utils/sql_commands");
+
+    console.log("request body", req.body);
+
     try {
       const result = await pool.query(getReviewCards);
       res.status(200).json(result.rows);

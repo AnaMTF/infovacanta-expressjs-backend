@@ -596,4 +596,32 @@ router.route("/next-val/reviews")
     }
   });
 
+router.route("/update-upvotes/:reviewId")
+  .post(async function (req, res) {
+    const { value } = req.body;
+
+    try {
+      await pool.query("UPDATE reviews SET upvotes = $1 WHERE review_id = $2", [value, req.params.reviewId]);
+      console.log("Scorul recenziei cu ID-ul " + req.params.reviewId + " a fost actualizat la " + value + " upvotes");
+      res.status(200).json({ message: "Upvotes updated", value: value });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json(error);
+    }
+  });
+
+router.route("/update-rating/:reviewId")
+  .post(async function (req, res) {
+    const { value } = req.body;
+
+    try {
+      await pool.query("UPDATE reviews SET rating = $1 WHERE review_id = $2", [value, req.params.reviewId]);
+      console.log("Scorul recenziei cu ID-ul " + req.params.reviewId + " a fost actualizat la " + value + " stele");
+      res.status(200).json({ message: "Rating updated", value: value });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json(error);
+    }
+  });
+
 module.exports = router;
